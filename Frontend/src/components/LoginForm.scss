@@ -1,0 +1,112 @@
+// LoginForm styles
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #333;
+
+      @media (max-width: 768px) {
+        font-size: 0.9rem;
+      }
+    }
+
+    .form-input {
+      padding: 0.75rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+      }
+
+      &:disabled {
+        background-color: #f5f5f5;
+        color: #999;
+        cursor: not-allowed;
+      }
+
+      &::placeholder {
+        color: #999;
+      }
+    }
+  }
+
+  .error-message {
+    padding: 0.75rem 1rem;
+    background-color: #fee;
+    border: 1px solid #fcc;
+    border-radius: 6px;
+    color: #c33;
+    font-size: 0.9rem;
+    animation: slideDown 0.3s ease;
+  }
+
+  .login-button {
+    padding: 0.9rem 1rem;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+      background-color: #357abd;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    }
+
+    &:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+  }
+
+  .login-footer {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+
+    a {
+      color: #4a90e2;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #357abd;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

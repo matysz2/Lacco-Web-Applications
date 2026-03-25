@@ -1,16 +1,101 @@
-# React + Vite
+# Lacco Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite aplikacja do zarządzania sprzedażą i magazynem.
 
-Currently, two official plugins are available:
+## Technologie
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 18** - UI framework
+- **Vite 8** - Build tool & dev server  
+- **React Router** - Client-side routing
+- **Axios** - HTTP client z interceptorami
+- **Sass** - CSS preprocessor
+- **ESLint** - Code linting
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Zainstaluj zależności
+```bash
+npm install
+```
 
-## Expanding the ESLint configuration
+### 2. Konfiguracja
+Skopiuj `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```env
+VITE_API_URL=http://localhost:8080/api
+```
+
+### 3. Uruchom dev server
+```bash
+npm run dev
+```
+
+Server bedzie dostepny na `http://localhost:5173/`
+
+## Struktura
+
+```
+src/
+├── pages/
+│   ├── LoginPage.jsx          # Strona logowania
+│   └── LoginPage.scss
+├── components/
+│   ├── LoginForm.jsx          # Formularz logowania
+│   └── LoginForm.scss
+├── services/
+│   └── api.js                 # Axios z interceptorami
+├── App.jsx                    # Główna aplikacja z routingiem
+└── main.jsx                   # Entry point
+```
+
+## Dostępne komendy
+
+- `npm run dev` - Dev server
+- `npm run build` - Build do produkcji
+- `npm run preview` - Podgląd build'u
+- `npm run lint` - ESLint
+
+## Implementowane funkcje
+
+### ✅ Login Page (/login)
+- Formularz email + hasło
+- Walidacja formularza
+- Obsługa błędów
+- Axios integration z JWT tokenami
+- Responsive design (mobile-first)
+
+### ✅ API Service
+- Automatyczne wstrzykiwanie JWT w nagłówkach
+- Token stored localStoragelu
+- Auto-logout na 401
+- Centralized error handling
+
+## Autentykacja
+
+1. User przesyła formularz logowania
+2. API call: `POST /auth/login`
+3. Backend waliduje przeciwko tabeli `profiles`
+4. JWT token jest zwracany i store'owany
+5. Kolejne requesty zawierają token w Authorization header
+6. Na 401 user jest redirectowany do login
+
+## Styling
+
+Sass/SCSS z:
+- BEM naming convention
+- CSS variables dla kolorów
+- Mobile-first responsive design
+- Smooth animations
+
+## TODO
+
+- [ ] Dashboard page
+- [ ] Protected routes
+- [ ] User context dla auth state
+- [ ] Produkty strona
+- [ ] Zamówienia strona
+- [ ] Error boundary
+- [ ] Global loading states
