@@ -11,8 +11,7 @@ const LoginPage = () => {
     <div className="login-page">
       <div className="login-container">
         <div className="login-header">
-          <h1>Lacco</h1>
-          <p>Zarządzanie sprzedażą i magazynem</p>
+          <h1>Zarządzanie sprzedażą i magazynem</h1>
         </div>
         <LoginForm />
       </div>

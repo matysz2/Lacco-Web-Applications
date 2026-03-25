@@ -1,11 +1,19 @@
-// LoginPage styles
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: url('login_background.png');
+  height: 100vh;
+}
+
 .login-page {
   display: flex;
-  align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem;
+  align-items: center;
+  height: 100vh;
+ 
+ 
+ 
 
   .login-container {
     background: white;
@@ -45,11 +53,7 @@
       }
     }
 
-    p {
-      font-size: 1rem;
-      color: #666;
-      margin: 0;
-    }
+
   }
 }
 
