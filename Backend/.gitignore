@@ -1,0 +1,53 @@
+# --- JAVA / SPRING BOOT ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.marshal
+*.log
+*.patch
+*.ko
+.mtj.tmp/
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# --- REACT / NODE ---
+node_modules/
+/build
+.pnp
+.pnp.js
+coverage/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- IDE (IntelliJ, VS Code, Eclipse) ---
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.factorypath
+
+# --- SYSTEM & TEMPORARY ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+*.swp
+*.bak
+*.tmp
+
+# --- DATABASE & CSV ---
+# Odkomentuj poniższą linię, jeśli plik schema.csv ma być TYLKO lokalnie
+# Supabase Snippet Public Schema Column List.csv
