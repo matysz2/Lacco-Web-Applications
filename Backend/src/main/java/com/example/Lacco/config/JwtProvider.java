@@ -3,9 +3,7 @@ package com.example.Lacco.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +52,7 @@ public class JwtProvider {
             .subject(subject)
             .issuedAt(now)
             .expiration(expiryDate)
-            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .signWith(getSigningKey())
             .compact();
     }
 
@@ -84,10 +81,10 @@ public class JwtProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+            Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token);
+                .parseSignedClaims(token);
             return true;
         } catch (JwtException e) {
             log.error("JWT validation error: {}", e.getMessage());
@@ -99,10 +96,10 @@ public class JwtProvider {
      * Extract all claims from token
      */
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())
+        return Jwts.parser()
+            .verifyWith(getSigningKey())
             .build()
-            .parseClaimsJws(token)
-            .getBody();
+            .parseSignedClaims(token)
+            .getPayload();
     }
 }

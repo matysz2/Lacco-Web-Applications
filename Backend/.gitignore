@@ -12,6 +12,7 @@ target/
 *.zip
 *.tar.gz
 *.rar
+application.properties
 
 # --- REACT / NODE ---
 node_modules/
