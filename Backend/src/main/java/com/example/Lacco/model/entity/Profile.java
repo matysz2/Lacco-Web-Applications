@@ -22,7 +22,7 @@ import java.util.UUID;
 public class Profile {
 
     @Id
-    @Column(name = "id", columnDefinition = "UUID")
+    @Column(name = "id")
     private UUID id;
 
     @Column(name = "first_name")
@@ -37,7 +37,7 @@ public class Profile {
     @Column(name = "role")
     private String role;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
     @Column(name = "fcm_token")
@@ -49,9 +49,9 @@ public class Profile {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @Column(name = "last_login", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(name = "last_login")
     private OffsetDateTime lastLogin;
 
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 }

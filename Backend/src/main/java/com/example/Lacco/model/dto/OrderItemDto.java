@@ -1,6 +1,7 @@
 package com.example.Lacco.model.dto;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -8,11 +9,12 @@ import java.util.UUID;
  */
 public record OrderItemDto(
     UUID id,
-    UUID orderId,
-    UUID productId,
-    String productName,
-    BigDecimal quantity,
-    BigDecimal pricePerUnit,
-    BigDecimal totalPrice,
-    BigDecimal weight
+    UUID produktId,
+    BigDecimal ilosc,
+    BigDecimal cenaZastosowana,
+    OffsetDateTime createdAt,
+    BigDecimal wartoscNetto,
+    String nazwa,
+    String opakowanie,
+    Integer kolorId
 ) {}

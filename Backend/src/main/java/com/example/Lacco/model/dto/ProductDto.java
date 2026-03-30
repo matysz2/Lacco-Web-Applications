@@ -9,10 +9,14 @@ import java.util.UUID;
  */
 public record ProductDto(
     UUID id,
-    String name,
-    String description,
-    BigDecimal quantityInStock,
-    BigDecimal pricePerKg,
-    OffsetDateTime createdAt,
-    OffsetDateTime updatedAt
+    String kodProduktu,
+    String grupa,
+    String jm,
+    String nazwa,
+    BigDecimal opakowanie,
+    BigDecimal cenaProdukcji,
+    BigDecimal cenaA,
+    BigDecimal cenaB,
+    BigDecimal cenaC,
+    OffsetDateTime createdAt
 ) {}

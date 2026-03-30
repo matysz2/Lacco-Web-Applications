@@ -12,10 +12,10 @@ import java.util.UUID;
 
 /**
  * Product entity representing a product in the warehouse
- * Maps to 'products' table in the database
+ * Maps to 'produkty' table in the database
  */
 @Entity
-@Table(name = "products")
+@Table(name = "produkty")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,24 +23,36 @@ import java.util.UUID;
 public class Product {
 
     @Id
-    @Column(name = "id", columnDefinition = "UUID")
+    @Column(name = "id")
     private UUID id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "kod_produktu", nullable = false)
+    private String kodProduktu;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "grupa")
+    private String grupa;
 
-    @Column(name = "quantity_in_stock", precision = 10, scale = 2)
-    private BigDecimal quantityInStock;
+    @Column(name = "jm")
+    private String jm;
 
-    @Column(name = "price_per_kg", precision = 10, scale = 2)
-    private BigDecimal pricePerKg;
+    @Column(name = "nazwa", nullable = false)
+    private String nazwa;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(name = "opakowanie")
+    private BigDecimal opakowanie;
+
+    @Column(name = "cena_produkcji")
+    private BigDecimal cenaProdukcji;
+
+    @Column(name = "cena_a")
+    private BigDecimal cenaA;
+
+    @Column(name = "cena_b")
+    private BigDecimal cenaB;
+
+    @Column(name = "cena_c")
+    private BigDecimal cenaC;
+
+    @Column(name = "created_at")
     private OffsetDateTime createdAt;
-
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private OffsetDateTime updatedAt;
 }

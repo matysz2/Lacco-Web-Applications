@@ -22,15 +22,15 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("SELECT o FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
     List<Order> findOrdersInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
 
-    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
+    @Query("SELECT SUM(o.sumaBrutto) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
     BigDecimal getTotalSalesInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
 
-    @Query("SELECT SUM(o.totalWeight) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
+    @Query("SELECT SUM(o.sumaNetto) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
     BigDecimal getTotalWeightInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
 
-    @Query("SELECT o.salesman.id, SUM(o.totalAmount) FROM Order o GROUP BY o.salesman.id ORDER BY SUM(o.totalAmount) DESC")
+    @Query("SELECT o.handlowiecId, SUM(o.sumaBrutto) FROM Order o GROUP BY o.handlowiecId ORDER BY SUM(o.sumaBrutto) DESC")
     List<Object[]> getSalesmanTotalSales();
 
-    @Query("SELECT o.salesman.id, SUM(o.totalAmount) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate GROUP BY o.salesman.id ORDER BY SUM(o.totalAmount) DESC")
+    @Query("SELECT o.handlowiecId, SUM(o.sumaBrutto) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate GROUP BY o.handlowiecId ORDER BY SUM(o.sumaBrutto) DESC")
     List<Object[]> getSalesmanSalesInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
 }

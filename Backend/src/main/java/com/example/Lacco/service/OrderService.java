@@ -47,20 +47,16 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
-        Customer customer = customerRepository.findById(orderDto.customerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
-        Profile salesman = profileRepository.findById(orderDto.salesmanId())
-                .orElseThrow(() -> new RuntimeException("Salesman not found"));
-
         Order order = Order.builder()
                 .id(UUID.randomUUID())
-                .customer(customer)
-                .salesman(salesman)
+                .numerZamowienia(orderDto.numerZamowienia())
+                .klientId(orderDto.klientId())
                 .status(orderDto.status())
-                .totalAmount(orderDto.totalAmount())
-                .totalWeight(orderDto.totalWeight())
+                .sumaBrutto(orderDto.sumaBrutto())
+                .uwagi(orderDto.uwagi())
                 .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
+                .handlowiecId(orderDto.handlowiecId())
+                .sumaNetto(orderDto.sumaNetto())
                 .build();
 
         Order saved = orderRepository.save(order);
@@ -81,22 +77,13 @@ public class OrderService {
         Order existing = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        if (orderDto.customerId() != null) {
-            Customer customer = customerRepository.findById(orderDto.customerId())
-                    .orElseThrow(() -> new RuntimeException("Customer not found"));
-            existing.setCustomer(customer);
-        }
-
-        if (orderDto.salesmanId() != null) {
-            Profile salesman = profileRepository.findById(orderDto.salesmanId())
-                    .orElseThrow(() -> new RuntimeException("Salesman not found"));
-            existing.setSalesman(salesman);
-        }
-
+        existing.setNumerZamowienia(orderDto.numerZamowienia());
+        existing.setKlientId(orderDto.klientId());
         existing.setStatus(orderDto.status());
-        existing.setTotalAmount(orderDto.totalAmount());
-        existing.setTotalWeight(orderDto.totalWeight());
-        existing.setUpdatedAt(OffsetDateTime.now());
+        existing.setSumaBrutto(orderDto.sumaBrutto());
+        existing.setUwagi(orderDto.uwagi());
+        existing.setHandlowiecId(orderDto.handlowiecId());
+        existing.setSumaNetto(orderDto.sumaNetto());
 
         Order saved = orderRepository.save(existing);
 
@@ -147,21 +134,20 @@ public class OrderService {
     }
 
     private OrderDto toDto(Order order) {
-        List<OrderItemDto> items = orderItemRepository.findByOrderId(order.getId()).stream()
+        List<OrderItemDto> items = order.getOrderItems().stream()
                 .map(this::toOrderItemDto)
                 .collect(Collectors.toList());
 
         return new OrderDto(
                 order.getId(),
-                order.getCustomer() != null ? order.getCustomer().getId() : null,
-                order.getCustomer() != null ? order.getCustomer().getName() : null,
-                order.getSalesman() != null ? order.getSalesman().getId() : null,
-                order.getSalesman() != null ? (order.getSalesman().getFirstName() + " " + order.getSalesman().getLastName()) : null,
+                order.getNumerZamowienia(),
+                order.getKlientId(),
                 order.getStatus(),
-                order.getTotalAmount(),
-                order.getTotalWeight(),
+                order.getSumaBrutto(),
+                order.getUwagi(),
                 order.getCreatedAt(),
-                order.getUpdatedAt(),
+                order.getHandlowiecId(),
+                order.getSumaNetto(),
                 items
         );
     }
@@ -169,25 +155,29 @@ public class OrderService {
     private OrderItemDto toOrderItemDto(OrderItem item) {
         return new OrderItemDto(
                 item.getId(),
-                item.getOrder().getId(),
-                item.getProduct() != null ? item.getProduct().getId() : null,
-                item.getProduct() != null ? item.getProduct().getName() : null,
-                item.getQuantity(),
-                item.getPricePerUnit(),
-                item.getTotalPrice(),
-                item.getWeight()
+                item.getProduktId(),
+                item.getIlosc(),
+                item.getCenaZastosowana(),
+                item.getCreatedAt(),
+                item.getWartoscNetto(),
+                item.getNazwa(),
+                item.getOpakowanie(),
+                item.getKolorId()
         );
     }
 
     private OrderItem toOrderItemEntity(OrderItemDto dto, Order order) {
-        // Assuming product is fetched separately if needed
         return OrderItem.builder()
                 .id(UUID.randomUUID())
                 .order(order)
-                .quantity(dto.quantity())
-                .pricePerUnit(dto.pricePerUnit())
-                .totalPrice(dto.totalPrice())
-                .weight(dto.weight())
+                .produktId(dto.produktId())
+                .ilosc(dto.ilosc())
+                .cenaZastosowana(dto.cenaZastosowana())
+                .createdAt(dto.createdAt())
+                .wartoscNetto(dto.wartoscNetto())
+                .nazwa(dto.nazwa())
+                .opakowanie(dto.opakowanie())
+                .kolorId(dto.kolorId())
                 .build();
     }
 }

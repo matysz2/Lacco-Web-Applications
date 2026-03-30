@@ -30,7 +30,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerDto> getCustomerById(@PathVariable UUID id) {
+    public ResponseEntity<CustomerDto> getCustomerById(@PathVariable Integer id) {
         log.info("Fetching customer with id: {}", id);
         CustomerDto customer = customerService.getCustomerById(id);
         return ResponseEntity.ok(customer);
@@ -38,20 +38,20 @@ public class CustomerController {
 
     @PostMapping
     public ResponseEntity<CustomerDto> createCustomer(@RequestBody CustomerDto customerDto) {
-        log.info("Creating new customer: {}", customerDto.name());
+        log.info("Creating new customer: {}", customerDto.nazwaFirmy());
         CustomerDto created = customerService.createCustomer(customerDto);
         return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerDto> updateCustomer(@PathVariable UUID id, @RequestBody CustomerDto customerDto) {
+    public ResponseEntity<CustomerDto> updateCustomer(@PathVariable Integer id, @RequestBody CustomerDto customerDto) {
         log.info("Updating customer with id: {}", id);
         CustomerDto updated = customerService.updateCustomer(id, customerDto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Integer id) {
         log.info("Deleting customer with id: {}", id);
         customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();

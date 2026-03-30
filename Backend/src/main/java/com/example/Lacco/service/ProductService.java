@@ -38,7 +38,6 @@ public class ProductService {
         Product product = toEntity(productDto);
         product.setId(UUID.randomUUID());
         product.setCreatedAt(OffsetDateTime.now());
-        product.setUpdatedAt(OffsetDateTime.now());
         Product saved = productRepository.save(product);
         return toDto(saved);
     }
@@ -46,11 +45,15 @@ public class ProductService {
     public ProductDto updateProduct(UUID id, ProductDto productDto) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        existing.setName(productDto.name());
-        existing.setDescription(productDto.description());
-        existing.setQuantityInStock(productDto.quantityInStock());
-        existing.setPricePerKg(productDto.pricePerKg());
-        existing.setUpdatedAt(OffsetDateTime.now());
+        existing.setKodProduktu(productDto.kodProduktu());
+        existing.setGrupa(productDto.grupa());
+        existing.setJm(productDto.jm());
+        existing.setNazwa(productDto.nazwa());
+        existing.setOpakowanie(productDto.opakowanie());
+        existing.setCenaProdukcji(productDto.cenaProdukcji());
+        existing.setCenaA(productDto.cenaA());
+        existing.setCenaB(productDto.cenaB());
+        existing.setCenaC(productDto.cenaC());
         Product saved = productRepository.save(existing);
         return toDto(saved);
     }
@@ -65,24 +68,32 @@ public class ProductService {
     private ProductDto toDto(Product product) {
         return new ProductDto(
                 product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getQuantityInStock(),
-                product.getPricePerKg(),
-                product.getCreatedAt(),
-                product.getUpdatedAt()
+                product.getKodProduktu(),
+                product.getGrupa(),
+                product.getJm(),
+                product.getNazwa(),
+                product.getOpakowanie(),
+                product.getCenaProdukcji(),
+                product.getCenaA(),
+                product.getCenaB(),
+                product.getCenaC(),
+                product.getCreatedAt()
         );
     }
 
     private Product toEntity(ProductDto dto) {
         return Product.builder()
                 .id(dto.id())
-                .name(dto.name())
-                .description(dto.description())
-                .quantityInStock(dto.quantityInStock())
-                .pricePerKg(dto.pricePerKg())
+                .kodProduktu(dto.kodProduktu())
+                .grupa(dto.grupa())
+                .jm(dto.jm())
+                .nazwa(dto.nazwa())
+                .opakowanie(dto.opakowanie())
+                .cenaProdukcji(dto.cenaProdukcji())
+                .cenaA(dto.cenaA())
+                .cenaB(dto.cenaB())
+                .cenaC(dto.cenaC())
                 .createdAt(dto.createdAt())
-                .updatedAt(dto.updatedAt())
                 .build();
     }
 }

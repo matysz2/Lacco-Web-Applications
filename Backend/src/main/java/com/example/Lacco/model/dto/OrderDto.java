@@ -10,14 +10,13 @@ import java.util.UUID;
  */
 public record OrderDto(
     UUID id,
-    UUID customerId,
-    String customerName,
-    UUID salesmanId,
-    String salesmanName,
+    Integer numerZamowienia,
+    Integer klientId,
     String status,
-    BigDecimal totalAmount,
-    BigDecimal totalWeight,
+    BigDecimal sumaBrutto,
+    String uwagi,
     OffsetDateTime createdAt,
-    OffsetDateTime updatedAt,
+    UUID handlowiecId,
+    BigDecimal sumaNetto,
     List<OrderItemDto> orderItems
 ) {}

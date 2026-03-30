@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 /**
  * Customer entity representing a customer in the system
@@ -22,27 +22,48 @@ import java.util.UUID;
 public class Customer {
 
     @Id
-    @Column(name = "id", columnDefinition = "UUID")
-    private UUID id;
+    @Column(name = "id")
+    private Integer id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "nazwa_firmy", nullable = false)
+    private String nazwaFirmy;
 
-    @Column(name = "contact_info")
-    private String contactInfo;
+    @Column(name = "telefon")
+    private String telefon;
 
-    @Column(name = "address")
-    private String address;
+    @Column(name = "adres")
+    private String adres;
 
-    @Column(name = "phone")
-    private String phone;
+    @Column(name = "region")
+    private String region;
 
-    @Column(name = "email")
-    private String email;
+    @Column(name = "handlowiec")
+    private java.util.UUID handlowiec;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private OffsetDateTime createdAt;
+    @Column(name = "data_pozyskania")
+    private LocalDate dataPozyskania;
 
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private OffsetDateTime updatedAt;
+    @Column(name = "czy_odwiedzony")
+    private Boolean czyOdwiedzony;
+
+    @Column(name = "status_wizyty")
+    private String statusWizyty;
+
+    @Column(name = "opis_notatki")
+    private String opisNotatki;
+
+    @Column(name = "data_ostatniej_edycji")
+    private OffsetDateTime dataOstatniejEdycji;
+
+    @Column(name = "nawigacja")
+    private String nawigacja;
+
+    @Column(name = "strona_www")
+    private String stronaWww;
+
+    @Column(name = "grupa_cenowa")
+    private Integer grupaCenowa;
+
+    @Column(name = "ostatnia_wizyta")
+    private OffsetDateTime ostatniaWizyta;
 }

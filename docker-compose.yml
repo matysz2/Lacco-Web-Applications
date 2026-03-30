@@ -16,7 +16,7 @@ services:
     build: ./Backend
     container_name: lacco-backend
     ports:
-      - "8081:8080"
+      - "8081:8081"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/lacco_db
       - SPRING_DATASOURCE_USERNAME=postgres

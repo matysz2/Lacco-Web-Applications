@@ -7,14 +7,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
  * OrderItem entity representing an item in an order
- * Maps to 'order_items' table in the database
+ * Maps to 'pozycje_zamowienia' table in the database
  */
 @Entity
-@Table(name = "order_items")
+@Table(name = "pozycje_zamowienia")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,26 +23,34 @@ import java.util.UUID;
 public class OrderItem {
 
     @Id
-    @Column(name = "id", columnDefinition = "UUID")
+    @Column(name = "id")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "zamowienie_id")
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @Column(name = "produkt_id")
+    private UUID produktId;
 
-    @Column(name = "quantity", precision = 10, scale = 2)
-    private BigDecimal quantity;
+    @Column(name = "ilosc", nullable = false)
+    private BigDecimal ilosc;
 
-    @Column(name = "price_per_unit", precision = 10, scale = 2)
-    private BigDecimal pricePerUnit;
+    @Column(name = "cena_zastosowana", nullable = false)
+    private BigDecimal cenaZastosowana;
 
-    @Column(name = "total_price", precision = 10, scale = 2)
-    private BigDecimal totalPrice;
+    @Column(name = "created_at")
+    private OffsetDateTime createdAt;
 
-    @Column(name = "weight", precision = 10, scale = 2)
-    private BigDecimal weight;
+    @Column(name = "wartosc_netto")
+    private BigDecimal wartoscNetto;
+
+    @Column(name = "nazwa")
+    private String nazwa;
+
+    @Column(name = "opakowanie")
+    private String opakowanie;
+
+    @Column(name = "kolor_id")
+    private Integer kolorId;
 }

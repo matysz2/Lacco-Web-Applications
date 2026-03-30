@@ -13,10 +13,10 @@ import java.util.UUID;
 
 /**
  * Order entity representing an order in the system
- * Maps to 'orders' table in the database
+ * Maps to 'zamowienia' table in the database
  */
 @Entity
-@Table(name = "orders")
+@Table(name = "zamowienia")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,31 +24,32 @@ import java.util.UUID;
 public class Order {
 
     @Id
-    @Column(name = "id", columnDefinition = "UUID")
+    @Column(name = "id")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @Column(name = "numer_zamowienia", nullable = false)
+    private Integer numerZamowienia;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "salesman_id")
-    private Profile salesman;
+    @Column(name = "klient_id")
+    private Integer klientId;
 
     @Column(name = "status")
     private String status;
 
-    @Column(name = "total_amount", precision = 10, scale = 2)
-    private BigDecimal totalAmount;
+    @Column(name = "suma_brutto")
+    private BigDecimal sumaBrutto;
 
-    @Column(name = "total_weight", precision = 10, scale = 2)
-    private BigDecimal totalWeight;
+    @Column(name = "uwagi")
+    private String uwagi;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private OffsetDateTime updatedAt;
+    @Column(name = "handlowiec_id")
+    private UUID handlowiecId;
+
+    @Column(name = "suma_netto")
+    private BigDecimal sumaNetto;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;

@@ -28,7 +28,7 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
-    public CustomerDto getCustomerById(UUID id) {
+    public CustomerDto getCustomerById(Integer id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
         return toDto(customer);
@@ -36,27 +36,33 @@ public class CustomerService {
 
     public CustomerDto createCustomer(CustomerDto customerDto) {
         Customer customer = toEntity(customerDto);
-        customer.setId(UUID.randomUUID());
-        customer.setCreatedAt(OffsetDateTime.now());
-        customer.setUpdatedAt(OffsetDateTime.now());
+        customer.setId(null); // ID jest auto-generowany przez bazę
         Customer saved = customerRepository.save(customer);
         return toDto(saved);
     }
 
-    public CustomerDto updateCustomer(UUID id, CustomerDto customerDto) {
+    public CustomerDto updateCustomer(Integer id, CustomerDto customerDto) {
         Customer existing = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
-        existing.setName(customerDto.name());
-        existing.setContactInfo(customerDto.contactInfo());
-        existing.setAddress(customerDto.address());
-        existing.setPhone(customerDto.phone());
-        existing.setEmail(customerDto.email());
-        existing.setUpdatedAt(OffsetDateTime.now());
+        existing.setNazwaFirmy(customerDto.nazwaFirmy());
+        existing.setTelefon(customerDto.telefon());
+        existing.setAdres(customerDto.adres());
+        existing.setRegion(customerDto.region());
+        existing.setHandlowiec(customerDto.handlowiec());
+        existing.setDataPozyskania(customerDto.dataPozyskania());
+        existing.setCzyOdwiedzony(customerDto.czyOdwiedzony());
+        existing.setStatusWizyty(customerDto.statusWizyty());
+        existing.setOpisNotatki(customerDto.opisNotatki());
+        existing.setDataOstatniejEdycji(OffsetDateTime.now());
+        existing.setNawigacja(customerDto.nawigacja());
+        existing.setStronaWww(customerDto.stronaWww());
+        existing.setGrupaCenowa(customerDto.grupaCenowa());
+        existing.setOstatniaWizyta(customerDto.ostatniaWizyta());
         Customer saved = customerRepository.save(existing);
         return toDto(saved);
     }
 
-    public void deleteCustomer(UUID id) {
+    public void deleteCustomer(Integer id) {
         if (!customerRepository.existsById(id)) {
             throw new RuntimeException("Customer not found");
         }
@@ -66,26 +72,40 @@ public class CustomerService {
     private CustomerDto toDto(Customer customer) {
         return new CustomerDto(
                 customer.getId(),
-                customer.getName(),
-                customer.getContactInfo(),
-                customer.getAddress(),
-                customer.getPhone(),
-                customer.getEmail(),
-                customer.getCreatedAt(),
-                customer.getUpdatedAt()
+                customer.getNazwaFirmy(),
+                customer.getTelefon(),
+                customer.getAdres(),
+                customer.getRegion(),
+                customer.getHandlowiec(),
+                customer.getDataPozyskania(),
+                customer.getCzyOdwiedzony(),
+                customer.getStatusWizyty(),
+                customer.getOpisNotatki(),
+                customer.getDataOstatniejEdycji(),
+                customer.getNawigacja(),
+                customer.getStronaWww(),
+                customer.getGrupaCenowa(),
+                customer.getOstatniaWizyta()
         );
     }
 
     private Customer toEntity(CustomerDto dto) {
         return Customer.builder()
                 .id(dto.id())
-                .name(dto.name())
-                .contactInfo(dto.contactInfo())
-                .address(dto.address())
-                .phone(dto.phone())
-                .email(dto.email())
-                .createdAt(dto.createdAt())
-                .updatedAt(dto.updatedAt())
+                .nazwaFirmy(dto.nazwaFirmy())
+                .telefon(dto.telefon())
+                .adres(dto.adres())
+                .region(dto.region())
+                .handlowiec(dto.handlowiec())
+                .dataPozyskania(dto.dataPozyskania())
+                .czyOdwiedzony(dto.czyOdwiedzony())
+                .statusWizyty(dto.statusWizyty())
+                .opisNotatki(dto.opisNotatki())
+                .dataOstatniejEdycji(dto.dataOstatniejEdycji())
+                .nawigacja(dto.nawigacja())
+                .stronaWww(dto.stronaWww())
+                .grupaCenowa(dto.grupaCenowa())
+                .ostatniaWizyta(dto.ostatniaWizyta())
                 .build();
     }
 }
