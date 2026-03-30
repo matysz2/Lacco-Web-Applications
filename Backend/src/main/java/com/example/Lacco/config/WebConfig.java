@@ -12,8 +12,8 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**") // Odblokowuje wszystkie endpointy zaczynające się od /api
-                        .allowedOrigins("http://localhost:3000", "http://localhost:5173") // Tutaj wpisz port swojego Reacta
+                    registry.addMapping("/**") // Odblokuj wszystkie ścieżki                        
+                    .allowedOrigins("http://localhost:3000", "http://localhost:5173") // Tutaj wpisz port swojego Reacta
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

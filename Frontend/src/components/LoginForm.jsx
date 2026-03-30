@@ -28,32 +28,33 @@ const LoginForm = () => {
     }
     return true;
   };
-
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
+      // Wyśle zapytanie do: http://localhost:8081/api/auth/login
       const response = await api.post('/auth/login', {
         email,
         password,
       });
 
-      // Store token in localStorage
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      // Redirect to dashboard
-      window.location.href = '/dashboard';
+      if (response.data.user?.role === 'ADMIN') {
+        window.location.href = '/admin/dashboard';
+      } else if (response.data.user?.role === 'HANDLOWIEC') {
+        window.location.href = '/handlowiec/dashboard';
+      } else {
+        window.location.href = '/login';
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Błąd logowania. Spróbuj ponownie.');
-      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Błąd połączenia z serwerem');
     } finally {
       setIsLoading(false);
     }

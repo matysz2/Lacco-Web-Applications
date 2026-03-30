@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: lacco-postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=lacco_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=lacco_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./Backend
+    container_name: lacco-backend
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/lacco_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=lacco_password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db
+
+  frontend:
+    build: ./Frontend
+    container_name: lacco-frontend
+    ports:
+      - "3000:3000"
+    command: npm run dev -- --host --port 3000
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
