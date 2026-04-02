@@ -77,7 +77,11 @@ public class SalesmanService {
                 profile.getFirstName(),
                 profile.getLastName(),
                 profile.getEmail(),
-                profile.getRole()
+                profile.getRole(),
+                profile.getCreatedAt(),
+                profile.getIsActive(),
+                profile.getLastLogin(),
+                profile.getUpdatedAt()
         );
     }
 

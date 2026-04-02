@@ -1,0 +1,93 @@
+table_name,column_name,data_type,is_nullable
+ai_chat_history,id,uuid,NO
+ai_chat_history,created_at,timestamp with time zone,NO
+ai_chat_history,user_id,uuid,NO
+ai_chat_history,user_message,text,NO
+ai_chat_history,ai_response,text,NO
+ai_chat_history,product_category,text,YES
+ai_chat_history,session_id,text,YES
+ceny_klientow,id,integer,NO
+ceny_klientow,klient_id,integer,YES
+ceny_klientow,produkt_id,uuid,YES
+ceny_klientow,cena_specjalna,numeric,NO
+ceny_klientow,created_at,timestamp with time zone,YES
+ceny_klientow,kolor_id,integer,YES
+historia_ruchow,id,uuid,NO
+historia_ruchow,produkt_id,uuid,YES
+historia_ruchow,typ_ruchu,text,YES
+historia_ruchow,ilosc,numeric,NO
+historia_ruchow,uzytkownik_id,uuid,YES
+historia_ruchow,notatka,text,YES
+historia_ruchow,created_at,timestamp with time zone,YES
+kolory,id,integer,NO
+kolory,kod_koloru,text,NO
+kolory,nazwa_koloru,text,YES
+kolory,cena_za_kg,numeric,NO
+kolory,jm,text,YES
+kolory,grupa,text,YES
+kolory,cena_a,numeric,YES
+kolory,cena_b,numeric,YES
+kolory,cena_c,numeric,YES
+leady_stolarze,id,integer,NO
+leady_stolarze,nazwa_firmy,character varying,NO
+leady_stolarze,telefon,character varying,YES
+leady_stolarze,adres,character varying,YES
+leady_stolarze,region,character varying,YES
+leady_stolarze,handlowiec,uuid,YES
+leady_stolarze,data_pozyskania,date,YES
+leady_stolarze,czy_odwiedzony,boolean,YES
+leady_stolarze,status_wizyty,character varying,YES
+leady_stolarze,opis_notatki,text,YES
+leady_stolarze,data_ostatniej_edycji,timestamp without time zone,YES
+leady_stolarze,nawigacja,text,YES
+leady_stolarze,strona_www,text,YES
+leady_stolarze,grupa_cenowa,integer,YES
+leady_stolarze,ostatnia_wizyta,timestamp with time zone,YES
+pozycje_zamowienia,id,uuid,NO
+pozycje_zamowienia,zamowienie_id,uuid,YES
+pozycje_zamowienia,produkt_id,uuid,YES
+pozycje_zamowienia,ilosc,numeric,NO
+pozycje_zamowienia,cena_zastosowana,numeric,NO
+pozycje_zamowienia,created_at,timestamp with time zone,YES
+pozycje_zamowienia,wartosc_netto,numeric,YES
+pozycje_zamowienia,nazwa,text,YES
+pozycje_zamowienia,opakowanie,text,YES
+pozycje_zamowienia,kolor_id,integer,YES
+produkty,id,uuid,NO
+produkty,kod_produktu,text,NO
+produkty,grupa,text,YES
+produkty,jm,text,YES
+produkty,nazwa,text,NO
+produkty,opakowanie,numeric,YES
+produkty,cena_produkcji,numeric,YES
+produkty,cena_a,numeric,YES
+produkty,cena_b,numeric,YES
+produkty,cena_c,numeric,YES
+produkty,created_at,timestamp with time zone,YES
+profiles,id,uuid,NO
+profiles,first_name,text,YES
+profiles,last_name,text,YES
+profiles,email,text,YES
+profiles,role,text,YES
+profiles,created_at,timestamp with time zone,YES
+profiles,fcm_token,text,YES
+sales_goals,id,uuid,NO
+sales_goals,user_id,uuid,NO
+sales_goals,financial_goal,numeric,YES
+sales_goals,volume_goal,numeric,YES
+sales_goals,month_date,date,YES
+sales_goals,created_at,timestamp with time zone,NO
+stany_magazynowe,id,uuid,NO
+stany_magazynowe,produkt_id,uuid,YES
+stany_magazynowe,ilosc_dostepna,numeric,YES
+stany_magazynowe,stan_minimalny,numeric,YES
+stany_magazynowe,last_update,timestamp with time zone,YES
+zamowienia,id,uuid,NO
+zamowienia,numer_zamowienia,integer,NO
+zamowienia,klient_id,integer,YES
+zamowienia,status,text,YES
+zamowienia,suma_brutto,numeric,YES
+zamowienia,uwagi,text,YES
+zamowienia,created_at,timestamp with time zone,YES
+zamowienia,handlowiec_id,uuid,YES
+zamowienia,suma_netto,numeric,YES

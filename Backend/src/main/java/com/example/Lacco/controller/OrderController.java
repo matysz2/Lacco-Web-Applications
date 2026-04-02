@@ -4,6 +4,7 @@ import com.example.Lacco.model.dto.OrderDto;
 import com.example.Lacco.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,5 +64,27 @@ public class OrderController {
         log.info("Fetching dashboard stats");
         Map<String, Object> stats = orderService.getDashboardStats();
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/trader/dashboard/stats")
+    public ResponseEntity<Map<String, Object>> getTraderDashboardStats(@RequestHeader("Authorization") String authorizationHeader) {
+        log.info("Fetching trader dashboard stats");
+        try {
+            String token = authorizationHeader;
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+
+            if (token == null || token.isBlank()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            UUID handlowiecId = UUID.fromString(token);
+            Map<String, Object> stats = orderService.getTraderDashboardStats(handlowiecId);
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            log.error("Error fetching trader stats: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

@@ -49,7 +49,11 @@ public class AuthService {
                     profile.getFirstName(),
                     profile.getLastName(),
                     profile.getEmail(),
-                    profile.getRole()
+                    profile.getRole(),
+                    profile.getCreatedAt(),
+                    profile.getIsActive(),
+                    profile.getLastLogin(),
+                    profile.getUpdatedAt()
                 )
             );
         } catch (Exception e) {

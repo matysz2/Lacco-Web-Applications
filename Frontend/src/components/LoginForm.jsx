@@ -49,7 +49,7 @@ const handleSubmit = async (e) => {
       if (response.data.user?.role === 'ADMIN') {
         window.location.href = '/admin/dashboard';
       } else if (response.data.user?.role === 'HANDLOWIEC') {
-        window.location.href = '/handlowiec/dashboard';
+        window.location.href = '/trader/dashboard';
       } else {
         window.location.href = '/login';
       }

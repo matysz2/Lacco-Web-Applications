@@ -133,6 +133,26 @@ public class OrderService {
         return stats;
     }
 
+    public Map<String, Object> getTraderDashboardStats(UUID handlowiecId) {
+        YearMonth currentMonth = YearMonth.now();
+        OffsetDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
+        OffsetDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59).atOffset(OffsetDateTime.now().getOffset());
+
+        BigDecimal totalSales = orderRepository.getTotalSalesForTrader(handlowiecId);
+        BigDecimal monthlySales = orderRepository.getMonthlySalesForTrader(handlowiecId, startOfMonth, endOfMonth);
+
+        List<Object[]> topClient = orderRepository.getTopClientForTrader(handlowiecId);
+        List<Object[]> topProduct = orderRepository.getTopProductForTrader(handlowiecId);
+
+        Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("totalSales", totalSales != null ? totalSales : BigDecimal.ZERO);
+        stats.put("monthlySales", monthlySales != null ? monthlySales : BigDecimal.ZERO);
+        stats.put("topClient", topClient.isEmpty() ? null : topClient.get(0));
+        stats.put("topProduct", topProduct.isEmpty() ? null : topProduct.get(0));
+
+        return stats;
+    }
+
     private OrderDto toDto(Order order) {
         List<OrderItemDto> items = order.getOrderItems().stream()
                 .map(this::toOrderItemDto)

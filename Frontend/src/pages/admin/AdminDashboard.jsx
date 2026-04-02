@@ -38,7 +38,7 @@ const AdminDashboard = () => {
       if (response.data.role !== 'ADMIN') {
         // Redirect based on role
         if (response.data.role === 'HANDLOWIEC') {
-          navigate('/handlowiec/dashboard');
+          navigate('/trader/dashboard');
         } else {
           navigate('/login');
         }

@@ -3,8 +3,10 @@ package com.example.Lacco.model.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -17,7 +19,8 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "zamowienia")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

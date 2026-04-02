@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import TraderDashboard from './pages/trader/TraderDashboard';
 import './App.css';
 
 /**
@@ -25,6 +26,9 @@ function App() {
         
         {/* Admin routes */}
         <Route path="/admin/*" element={<AdminDashboard />} />
+        
+        {/* Trader routes */}
+        <Route path="/trader/*" element={<TraderDashboard />} />
         
         {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />

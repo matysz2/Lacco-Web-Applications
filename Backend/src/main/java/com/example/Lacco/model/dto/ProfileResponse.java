@@ -1,5 +1,6 @@
 package com.example.Lacco.model.dto;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -10,5 +11,9 @@ public record ProfileResponse(
     String firstName,
     String lastName,
     String email,
-    String role
+    String role,
+    OffsetDateTime createdAt,
+    Boolean isActive,
+    OffsetDateTime lastLogin,
+    OffsetDateTime updatedAt
 ) {}
