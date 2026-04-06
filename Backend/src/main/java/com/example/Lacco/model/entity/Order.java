@@ -27,6 +27,7 @@ import java.util.UUID;
 public class Order {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private UUID id;
 
@@ -54,6 +55,6 @@ public class Order {
     @Column(name = "suma_netto")
     private BigDecimal sumaNetto;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderItem> orderItems;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<OrderItem> orderItems = new java.util.ArrayList<>();
 }

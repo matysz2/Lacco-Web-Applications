@@ -58,6 +58,61 @@
       }
     }
 
+    .order-items-section {
+      .add-item-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+
+        select,
+        input {
+          flex: 1;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+
+        button {
+          background: #28a745;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+
+          &:hover {
+            background: #218838;
+          }
+        }
+      }
+
+      .order-items-list {
+        .order-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px;
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          margin-bottom: 5px;
+          background: #f9f9f9;
+
+          button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+
+            &:hover {
+              background: #c82333;
+            }
+          }
+        }
+      }
+    }
+
     .form-actions {
       display: flex;
       gap: 10px;

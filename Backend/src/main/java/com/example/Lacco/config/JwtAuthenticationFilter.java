@@ -45,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
         try {
             userEmail = jwtUtil.extractUsername(jwt);
+            log.info("Processing JWT token for user: {}", userEmail);
         } catch (Exception e) {
             log.error("Invalid JWT token: {}", e.getMessage());
             filterChain.doFilter(request, response);

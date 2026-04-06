@@ -47,9 +47,13 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
+        Integer numerZamowienia = orderDto.numerZamowienia();
+        if (numerZamowienia == null) {
+            numerZamowienia = getNextOrderNumber();
+        }
+
         Order order = Order.builder()
-                .id(UUID.randomUUID())
-                .numerZamowienia(orderDto.numerZamowienia())
+                .numerZamowienia(numerZamowienia)
                 .klientId(orderDto.klientId())
                 .status(orderDto.status())
                 .sumaBrutto(orderDto.sumaBrutto())
@@ -59,15 +63,15 @@ public class OrderService {
                 .sumaNetto(orderDto.sumaNetto())
                 .build();
 
-        Order saved = orderRepository.save(order);
-
-        // Save order items
+        // Create order items
         if (orderDto.orderItems() != null) {
-            for (OrderItemDto itemDto : orderDto.orderItems()) {
-                OrderItem item = toOrderItemEntity(itemDto, saved);
-                orderItemRepository.save(item);
-            }
+            List<OrderItem> items = orderDto.orderItems().stream()
+                    .map(itemDto -> toOrderItemEntity(itemDto, order))
+                    .collect(Collectors.toList());
+            order.setOrderItems(items);
         }
+
+        Order saved = orderRepository.save(order);
 
         return toDto(saved);
     }
@@ -85,18 +89,30 @@ public class OrderService {
         existing.setHandlowiecId(orderDto.handlowiecId());
         existing.setSumaNetto(orderDto.sumaNetto());
 
-        Order saved = orderRepository.save(existing);
-
         // Update order items if provided
         if (orderDto.orderItems() != null) {
             // Delete existing items
             orderItemRepository.findByOrderId(id).forEach(item -> orderItemRepository.delete(item));
-            // Save new items
-            for (OrderItemDto itemDto : orderDto.orderItems()) {
-                OrderItem item = toOrderItemEntity(itemDto, saved);
-                orderItemRepository.save(item);
-            }
+            // Create new items
+            List<OrderItem> newItems = orderDto.orderItems().stream()
+                    .map(itemDto -> toOrderItemEntity(itemDto, existing))
+                    .collect(Collectors.toList());
+            existing.setOrderItems(newItems);
         }
+
+        Order saved = orderRepository.save(existing);
+
+        return toDto(saved);
+    }
+
+    @Transactional
+    public OrderDto updateOrderStatus(UUID id, String newStatus) {
+        Order existing = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        existing.setStatus(newStatus);
+
+        Order saved = orderRepository.save(existing);
 
         return toDto(saved);
     }
@@ -186,9 +202,13 @@ public class OrderService {
         );
     }
 
+    private Integer getNextOrderNumber() {
+        Integer maxNumber = orderRepository.findMaxOrderNumber();
+        return (maxNumber != null ? maxNumber : 0) + 1;
+    }
+
     private OrderItem toOrderItemEntity(OrderItemDto dto, Order order) {
         return OrderItem.builder()
-                .id(UUID.randomUUID())
                 .order(order)
                 .produktId(dto.produktId())
                 .ilosc(dto.ilosc())

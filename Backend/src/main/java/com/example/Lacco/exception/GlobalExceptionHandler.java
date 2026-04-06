@@ -51,12 +51,12 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
             ex.getMessage(),
-            HttpStatus.UNAUTHORIZED.value(),
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
             null,
             LocalDateTime.now()
         );
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)

@@ -52,6 +52,15 @@ public class OrderController {
         return ResponseEntity.ok(updated);
     }
 
+    @PatchMapping("/{id}/status")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<OrderDto> updateOrderStatus(@PathVariable UUID id, @RequestBody Map<String, String> statusUpdate) {
+        log.info("Updating order status with id: {}", id);
+        String newStatus = statusUpdate.get("status");
+        OrderDto updated = orderService.updateOrderStatus(id, newStatus);
+        return ResponseEntity.ok(updated);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
         log.info("Deleting order with id: {}", id);

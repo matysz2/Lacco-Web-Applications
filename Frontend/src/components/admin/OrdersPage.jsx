@@ -12,6 +12,7 @@ const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [salesmen, setSalesmen] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
@@ -21,7 +22,13 @@ const OrdersPage = () => {
     status: 'NEW',
     sumaBrutto: 0,
     sumaNetto: 0,
-    uwagi: ''
+    uwagi: '',
+    orderItems: []
+  });
+  const [newItem, setNewItem] = useState({
+    produktId: '',
+    ilosc: 1,
+    cenaZastosowana: 0
   });
 
   useEffect(() => {
@@ -30,14 +37,16 @@ const OrdersPage = () => {
 
   const fetchData = async () => {
     try {
-      const [ordersResponse, customersResponse, salesmenResponse] = await Promise.all([
+      const [ordersResponse, customersResponse, salesmenResponse, productsResponse] = await Promise.all([
         api.get('/api/orders'),
         api.get('/api/customers'),
-        api.get('/api/salesmen')
+        api.get('/api/salesmen'),
+        api.get('/api/products')
       ]);
       setOrders(ordersResponse.data);
       setCustomers(customersResponse.data);
       setSalesmen(salesmenResponse.data);
+      setProducts(productsResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -49,22 +58,80 @@ const OrdersPage = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['sumaBrutto', 'sumaNetto'].includes(name) ? Number.parseFloat(value) || 0 : value
+      [name]: value
     }));
+  };
+
+  const handleNewItemChange = (e) => {
+    const { name, value } = e.target;
+    setNewItem(prev => ({
+      ...prev,
+      [name]: name === 'ilosc' || name === 'cenaZastosowana' ? Number.parseFloat(value) || 0 : value
+    }));
+  };
+
+  const addOrderItem = () => {
+    if (!newItem.produktId || newItem.ilosc <= 0 || newItem.cenaZastosowana <= 0) {
+      alert('Wypełnij wszystkie pola pozycji zamówienia');
+      return;
+    }
+    const product = products.find(p => p.id === newItem.produktId);
+    const item = {
+      produktId: newItem.produktId,
+      ilosc: newItem.ilosc,
+      cenaZastosowana: newItem.cenaZastosowana,
+      nazwa: product ? product.nazwa : ''
+    };
+    const updatedItems = [...formData.orderItems, item];
+    setFormData(prev => ({
+      ...prev,
+      orderItems: updatedItems,
+      sumaNetto: calculateNetto(updatedItems),
+      sumaBrutto: calculateBrutto(updatedItems)
+    }));
+    setNewItem({ produktId: '', ilosc: 1, cenaZastosowana: 0 });
+  };
+
+  const removeOrderItem = (index) => {
+    const updatedItems = formData.orderItems.filter((_, i) => i !== index);
+    setFormData(prev => ({
+      ...prev,
+      orderItems: updatedItems,
+      sumaNetto: calculateNetto(updatedItems),
+      sumaBrutto: calculateBrutto(updatedItems)
+    }));
+  };
+
+  const calculateNetto = (items) => {
+    return items.reduce((sum, item) => sum + (item.ilosc * item.cenaZastosowana), 0);
+  };
+
+  const calculateBrutto = (items) => {
+    const netto = calculateNetto(items);
+    return netto * 1.23; // Zakładając 23% VAT
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      ...formData,
+      orderItems: formData.orderItems.map(item => ({
+        produktId: item.produktId,
+        ilosc: item.ilosc,
+        cenaZastosowana: item.cenaZastosowana,
+        nazwa: item.nazwa
+      }))
+    };
     try {
       if (editingOrder) {
-        await api.put(`/api/orders/${editingOrder.id}`, formData);
+        await api.put(`/api/orders/${editingOrder.id}`, payload);
       } else {
-        await api.post('/api/orders', formData);
+        await api.post('/api/orders', payload);
       }
       fetchData();
       setShowModal(false);
       setEditingOrder(null);
-      setFormData({ klientId: '', handlowiecId: '', status: 'NEW', sumaBrutto: 0, sumaNetto: 0, uwagi: '' });
+      setFormData({ klientId: '', handlowiecId: '', status: 'NEW', sumaBrutto: 0, sumaNetto: 0, uwagi: '', numerZamowienia: null, orderItems: [] });
     } catch (error) {
       console.error('Error saving order:', error);
       alert('Błąd podczas zapisywania zamówienia');
@@ -73,13 +140,21 @@ const OrdersPage = () => {
 
   const handleEdit = (order) => {
     setEditingOrder(order);
+    const items = order.orderItems ? order.orderItems.map(item => ({
+      produktId: item.produktId,
+      ilosc: item.ilosc,
+      cenaZastosowana: item.cenaZastosowana,
+      nazwa: item.nazwa
+    })) : [];
     setFormData({
       klientId: order.klientId ?? order.customerId ?? '',
       handlowiecId: order.handlowiecId ?? order.salesmanId ?? '',
       status: order.status,
-      sumaBrutto: order.sumaBrutto ?? order.totalAmount ?? 0,
-      sumaNetto: order.sumaNetto ?? 0,
-      uwagi: order.uwagi ?? ''
+      sumaBrutto: calculateBrutto(items),
+      sumaNetto: calculateNetto(items),
+      uwagi: order.uwagi ?? '',
+      numerZamowienia: order.numerZamowienia ?? '',
+      orderItems: items
     });
     setShowModal(true);
   };
@@ -98,7 +173,7 @@ const OrdersPage = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await api.put(`/api/orders/${orderId}`, { status: newStatus });
+      await api.patch(`/api/orders/${orderId}/status`, { status: newStatus });
       fetchData();
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -108,7 +183,7 @@ const OrdersPage = () => {
 
   const handleAdd = () => {
     setEditingOrder(null);
-    setFormData({ klientId: '', handlowiecId: '', status: 'NEW', sumaBrutto: 0, sumaNetto: 0, uwagi: '' });
+    setFormData({ klientId: '', handlowiecId: '', status: 'NEW', sumaBrutto: 0, sumaNetto: 0, uwagi: '', numerZamowienia: null, orderItems: [] });
     setShowModal(true);
   };
 
@@ -132,7 +207,7 @@ const OrdersPage = () => {
 
   const getCustomerName = (customerId) => {
     const customer = customers.find((c) => c.id === customerId);
-    return customer ? customer.name : 'Nieznany';
+    return customer ? customer.nazwaFirmy : 'Nieznany';
   };
 
   const getSalesmanName = (salesmanId) => {
@@ -248,7 +323,7 @@ const OrdersPage = () => {
               <option value="">Wybierz klienta</option>
               {customers.map(customer => (
                 <option key={customer.id} value={customer.id}>
-                  {customer.name}
+                  {customer.nazwaFirmy}
                 </option>
               ))}
             </select>
@@ -287,30 +362,11 @@ const OrdersPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="sumaBrutto">Wartość brutto (PLN)</label>
-            <input
-              type="number"
-              id="sumaBrutto"
-              name="sumaBrutto"
-              value={formData.sumaBrutto}
-              onChange={handleInputChange}
-              step="0.01"
-              min="0"
-              required
-            />
+            <label>Wartość brutto (PLN): {formData.sumaBrutto.toFixed(2)}</label>
           </div>
 
           <div className="form-group">
-            <label htmlFor="sumaNetto">Wartość netto (PLN)</label>
-            <input
-              type="number"
-              id="sumaNetto"
-              name="sumaNetto"
-              value={formData.sumaNetto}
-              onChange={handleInputChange}
-              step="0.01"
-              min="0"
-            />
+            <label>Wartość netto (PLN): {formData.sumaNetto.toFixed(2)}</label>
           </div>
 
           <div className="form-group">
@@ -322,6 +378,53 @@ const OrdersPage = () => {
               onChange={handleInputChange}
               rows="3"
             />
+          </div>
+
+          <div className="form-group">
+            <label>Pozcje zamówienia</label>
+            <div className="order-items-section">
+              <div className="add-item-form">
+                <select
+                  name="produktId"
+                  value={newItem.produktId}
+                  onChange={handleNewItemChange}
+                >
+                  <option value="">Wybierz produkt</option>
+                  {products.map(product => (
+                    <option key={product.id} value={product.id}>
+                      {product.nazwa} ({product.kodProduktu})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  name="ilosc"
+                  placeholder="Ilość"
+                  value={newItem.ilosc}
+                  onChange={handleNewItemChange}
+                  min="0.01"
+                  step="0.01"
+                />
+                <input
+                  type="number"
+                  name="cenaZastosowana"
+                  placeholder="Cena"
+                  value={newItem.cenaZastosowana}
+                  onChange={handleNewItemChange}
+                  min="0"
+                  step="0.01"
+                />
+                <button type="button" onClick={addOrderItem}>Dodaj pozycję</button>
+              </div>
+              <div className="order-items-list">
+                {formData.orderItems.map((item, index) => (
+                  <div key={index} className="order-item">
+                    <span>{item.nazwa} - {item.ilosc} szt. x {item.cenaZastosowana} PLN</span>
+                    <button type="button" onClick={() => removeOrderItem(index)}>Usuń</button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="form-actions">

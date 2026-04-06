@@ -35,10 +35,10 @@ const DashboardHome = () => {
   };
 
   const formatTopSalesman = (topSalesman) => {
-    if (!Array.isArray(topSalesman) || topSalesman.length < 2 || topSalesman[1] == null) {
+    if (!Array.isArray(topSalesman) || topSalesman.length < 3 || topSalesman[0] == null) {
       return 'Brak danych';
     }
-    return `${Number.parseFloat(topSalesman[1]).toFixed(2)} PLN`;
+    return `${topSalesman[0]} ${topSalesman[1]}`;
   };
 
   if (loading) {

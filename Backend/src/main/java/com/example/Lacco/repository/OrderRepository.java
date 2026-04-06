@@ -25,14 +25,17 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("SELECT SUM(o.sumaBrutto) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
     BigDecimal getTotalSalesInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
 
-    @Query("SELECT SUM(o.sumaNetto) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
-    BigDecimal getTotalWeightInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
+    @Query("SELECT MAX(o.numerZamowienia) FROM Order o")
+    Integer findMaxOrderNumber();
 
-    @Query("SELECT o.handlowiecId, SUM(o.sumaBrutto) FROM Order o GROUP BY o.handlowiecId ORDER BY SUM(o.sumaBrutto) DESC")
+    @Query("SELECT p.firstName, p.lastName, SUM(o.sumaBrutto) FROM Order o JOIN Profile p ON o.handlowiecId = p.id GROUP BY o.handlowiecId ORDER BY SUM(o.sumaBrutto) DESC")
     List<Object[]> getSalesmanTotalSales();
 
-    @Query("SELECT o.handlowiecId, SUM(o.sumaBrutto) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate GROUP BY o.handlowiecId ORDER BY SUM(o.sumaBrutto) DESC")
+    @Query("SELECT p.firstName, p.lastName, SUM(o.sumaBrutto) FROM Order o JOIN Profile p ON o.handlowiecId = p.id WHERE o.createdAt >= :startDate AND o.createdAt < :endDate GROUP BY o.handlowiecId ORDER BY SUM(o.sumaBrutto) DESC")
     List<Object[]> getSalesmanSalesInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
+
+    @Query("SELECT SUM(oi.ilosc) FROM OrderItem oi JOIN oi.order o WHERE o.createdAt >= :startDate AND o.createdAt < :endDate")
+    BigDecimal getTotalWeightInMonth(@Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
 
     // Trader stats methods
     @Query("SELECT SUM(o.sumaNetto) FROM Order o WHERE o.handlowiecId = :handlowiecId")
@@ -41,7 +44,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("SELECT SUM(o.sumaNetto) FROM Order o WHERE o.handlowiecId = :handlowiecId AND o.createdAt >= :startDate AND o.createdAt < :endDate")
     BigDecimal getMonthlySalesForTrader(@Param("handlowiecId") UUID handlowiecId, @Param("startDate") OffsetDateTime startDate, @Param("endDate") OffsetDateTime endDate);
 
-    @Query("SELECT o.klientId, SUM(o.sumaNetto) FROM Order o WHERE o.handlowiecId = :handlowiecId GROUP BY o.klientId ORDER BY SUM(o.sumaNetto) DESC LIMIT 1")
+    @Query("SELECT c.nazwaFirmy, SUM(o.sumaNetto) FROM Order o JOIN Customer c ON o.klientId = c.id WHERE o.handlowiecId = :handlowiecId GROUP BY o.klientId ORDER BY SUM(o.sumaNetto) DESC LIMIT 1")
     List<Object[]> getTopClientForTrader(@Param("handlowiecId") UUID handlowiecId);
 
     @Query("SELECT oi.produktId, SUM(oi.ilosc) FROM OrderItem oi JOIN oi.order o WHERE o.handlowiecId = :handlowiecId GROUP BY oi.produktId ORDER BY SUM(oi.ilosc) DESC LIMIT 1")
