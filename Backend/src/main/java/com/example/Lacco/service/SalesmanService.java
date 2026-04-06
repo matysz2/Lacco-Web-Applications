@@ -21,9 +21,10 @@ import java.util.stream.Collectors;
 public class SalesmanService {
 
     private final ProfileRepository profileRepository;
+    private final EmailService emailService;
 
     public List<ProfileResponse> getAllSalesmen() {
-        return profileRepository.findByRole("HANDLOWIEC").stream()
+        return profileRepository.findByRole("TRADER").stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -31,7 +32,7 @@ public class SalesmanService {
     public ProfileResponse getSalesmanById(UUID id) {
         Profile profile = profileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Salesman not found"));
-        if (!"HANDLOWIEC".equals(profile.getRole())) {
+        if (!"TRADER".equals(profile.getRole())) {
             throw new RuntimeException("Profile is not a salesman");
         }
         return toDto(profile);
@@ -40,18 +41,29 @@ public class SalesmanService {
     public ProfileResponse createSalesman(ProfileResponse profileResponse) {
         Profile profile = toEntity(profileResponse);
         profile.setId(UUID.randomUUID());
-        profile.setRole("HANDLOWIEC");
+        profile.setRole("TRADER");
         profile.setCreatedAt(OffsetDateTime.now());
         profile.setUpdatedAt(OffsetDateTime.now());
         profile.setIsActive(true);
         Profile saved = profileRepository.save(profile);
+
+        // Generate password reset token
+        String token = UUID.randomUUID().toString();
+        saved.setPasswordResetToken(token);
+        saved.setTokenExpiry(OffsetDateTime.now().plusHours(24));
+        profileRepository.save(saved);
+
+        // Send email with reset link
+        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        emailService.sendPasswordResetEmail(saved.getEmail(), resetLink);
+
         return toDto(saved);
     }
 
     public ProfileResponse updateSalesman(UUID id, ProfileResponse profileResponse) {
         Profile existing = profileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Salesman not found"));
-        if (!"HANDLOWIEC".equals(existing.getRole())) {
+        if (!"TRADER".equals(existing.getRole())) {
             throw new RuntimeException("Profile is not a salesman");
         }
         existing.setFirstName(profileResponse.firstName());
@@ -65,7 +77,7 @@ public class SalesmanService {
     public void deleteSalesman(UUID id) {
         Profile profile = profileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Salesman not found"));
-        if (!"HANDLOWIEC".equals(profile.getRole())) {
+        if (!"TRADER".equals(profile.getRole())) {
             throw new RuntimeException("Profile is not a salesman");
         }
         profileRepository.deleteById(id);

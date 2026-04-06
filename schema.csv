@@ -71,6 +71,12 @@ profiles,email,text,YES
 profiles,role,text,YES
 profiles,created_at,timestamp with time zone,YES
 profiles,fcm_token,text,YES
+profiles,password_hash,text,YES
+profiles,is_active,bool,YES
+profiles,last_login,timestamptz,YES
+profiles,updated_at,timestamptz,YES
+profiles,password_reset_token,text,YES
+profiles,token_expiry,timestamptz,YES
 sales_goals,id,uuid,NO
 sales_goals,user_id,uuid,NO
 sales_goals,financial_goal,numeric,YES

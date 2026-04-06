@@ -48,13 +48,13 @@ const handleSubmit = async (e) => {
 
       if (response.data.user?.role === 'ADMIN') {
         window.location.href = '/admin/dashboard';
-      } else if (response.data.user?.role === 'HANDLOWIEC') {
+      } else if (response.data.user?.role === 'TRADER') {
         window.location.href = '/trader/dashboard';
       } else {
         window.location.href = '/login';
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Błąd połączenia z serwerem');
+      setError(err.response?.data?.error || 'Błąd połączenia z serwerem');
     } finally {
       setIsLoading(false);
     }

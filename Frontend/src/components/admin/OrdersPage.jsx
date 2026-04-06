@@ -16,11 +16,12 @@ const OrdersPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [formData, setFormData] = useState({
-    customerId: '',
-    salesmanId: '',
+    klientId: '',
+    handlowiecId: '',
     status: 'NEW',
-    totalAmount: 0,
-    totalWeight: 0
+    sumaBrutto: 0,
+    sumaNetto: 0,
+    uwagi: ''
   });
 
   useEffect(() => {
@@ -48,7 +49,7 @@ const OrdersPage = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name.includes('Amount') || name.includes('Weight') ? parseFloat(value) || 0 : value
+      [name]: ['sumaBrutto', 'sumaNetto'].includes(name) ? Number.parseFloat(value) || 0 : value
     }));
   };
 
@@ -63,7 +64,7 @@ const OrdersPage = () => {
       fetchData();
       setShowModal(false);
       setEditingOrder(null);
-      setFormData({ customerId: '', salesmanId: '', status: 'NEW', totalAmount: 0, totalWeight: 0 });
+      setFormData({ klientId: '', handlowiecId: '', status: 'NEW', sumaBrutto: 0, sumaNetto: 0, uwagi: '' });
     } catch (error) {
       console.error('Error saving order:', error);
       alert('Błąd podczas zapisywania zamówienia');
@@ -73,17 +74,18 @@ const OrdersPage = () => {
   const handleEdit = (order) => {
     setEditingOrder(order);
     setFormData({
-      customerId: order.customerId,
-      salesmanId: order.salesmanId,
+      klientId: order.klientId ?? order.customerId ?? '',
+      handlowiecId: order.handlowiecId ?? order.salesmanId ?? '',
       status: order.status,
-      totalAmount: order.totalAmount,
-      totalWeight: order.totalWeight
+      sumaBrutto: order.sumaBrutto ?? order.totalAmount ?? 0,
+      sumaNetto: order.sumaNetto ?? 0,
+      uwagi: order.uwagi ?? ''
     });
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Czy na pewno chcesz usunąć to zamówienie?')) {
+    if (globalThis.confirm('Czy na pewno chcesz usunąć to zamówienie?')) {
       try {
         await api.delete(`/api/orders/${id}`);
         fetchData();
@@ -96,7 +98,7 @@ const OrdersPage = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await api.put(`/orders/${orderId}`, { status: newStatus });
+      await api.put(`/api/orders/${orderId}`, { status: newStatus });
       fetchData();
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -106,7 +108,7 @@ const OrdersPage = () => {
 
   const handleAdd = () => {
     setEditingOrder(null);
-    setFormData({ customerId: '', salesmanId: '', status: 'NEW', totalAmount: 0, totalWeight: 0 });
+    setFormData({ klientId: '', handlowiecId: '', status: 'NEW', sumaBrutto: 0, sumaNetto: 0, uwagi: '' });
     setShowModal(true);
   };
 
@@ -128,18 +130,28 @@ const OrdersPage = () => {
     }
   };
 
+  const getCustomerName = (customerId) => {
+    const customer = customers.find((c) => c.id === customerId);
+    return customer ? customer.name : 'Nieznany';
+  };
+
+  const getSalesmanName = (salesmanId) => {
+    const salesman = salesmen.find((s) => s.id === salesmanId);
+    return salesman ? `${salesman.firstName} ${salesman.lastName}` : 'Nieznany';
+  };
+
   const columns = [
     {
-      key: 'customerName',
+      key: 'klientId',
       label: 'Klient',
       sortable: true,
-      render: (value, item) => item.customerName || 'Nieznany'
+      render: (value, item) => getCustomerName(item.klientId ?? item.customerId)
     },
     {
-      key: 'salesmanName',
+      key: 'handlowiecId',
       label: 'Handlowiec',
       sortable: true,
-      render: (value, item) => item.salesmanName || 'Nieznany'
+      render: (value, item) => getSalesmanName(item.handlowiecId ?? item.salesmanId)
     },
     {
       key: 'status',
@@ -152,16 +164,16 @@ const OrdersPage = () => {
       )
     },
     {
-      key: 'totalAmount',
+      key: 'sumaBrutto',
       label: 'Wartość',
       sortable: true,
-      render: (value) => `${value?.toFixed(2) || '0.00'} PLN`
+      render: (value, item) => `${(item.sumaBrutto ?? item.totalAmount)?.toFixed(2) || '0.00'} PLN`
     },
     {
-      key: 'totalWeight',
-      label: 'Waga',
+      key: 'sumaNetto',
+      label: 'Wartość netto',
       sortable: true,
-      render: (value) => `${value?.toFixed(2) || '0.00'} kg`
+      render: (value, item) => `${(item.sumaNetto ?? 0)?.toFixed(2) || '0.00'} PLN`
     },
     {
       key: 'createdAt',
@@ -225,11 +237,11 @@ const OrdersPage = () => {
       >
         <form onSubmit={handleSubmit} className="order-form">
           <div className="form-group">
-            <label htmlFor="customerId">Klient</label>
+            <label htmlFor="klientId">Klient</label>
             <select
-              id="customerId"
-              name="customerId"
-              value={formData.customerId}
+              id="klientId"
+              name="klientId"
+              value={formData.klientId}
               onChange={handleInputChange}
               required
             >
@@ -243,11 +255,11 @@ const OrdersPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="salesmanId">Handlowiec</label>
+            <label htmlFor="handlowiecId">Handlowiec</label>
             <select
-              id="salesmanId"
-              name="salesmanId"
-              value={formData.salesmanId}
+              id="handlowiecId"
+              name="handlowiecId"
+              value={formData.handlowiecId}
               onChange={handleInputChange}
               required
             >
@@ -275,12 +287,12 @@ const OrdersPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="totalAmount">Wartość całkowita (PLN)</label>
+            <label htmlFor="sumaBrutto">Wartość brutto (PLN)</label>
             <input
               type="number"
-              id="totalAmount"
-              name="totalAmount"
-              value={formData.totalAmount}
+              id="sumaBrutto"
+              name="sumaBrutto"
+              value={formData.sumaBrutto}
               onChange={handleInputChange}
               step="0.01"
               min="0"
@@ -289,16 +301,26 @@ const OrdersPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="totalWeight">Waga całkowita (kg)</label>
+            <label htmlFor="sumaNetto">Wartość netto (PLN)</label>
             <input
               type="number"
-              id="totalWeight"
-              name="totalWeight"
-              value={formData.totalWeight}
+              id="sumaNetto"
+              name="sumaNetto"
+              value={formData.sumaNetto}
               onChange={handleInputChange}
               step="0.01"
               min="0"
-              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="uwagi">Uwagi</label>
+            <textarea
+              id="uwagi"
+              name="uwagi"
+              value={formData.uwagi}
+              onChange={handleInputChange}
+              rows="3"
             />
           </div>
 

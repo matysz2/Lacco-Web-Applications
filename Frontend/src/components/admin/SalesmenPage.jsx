@@ -6,7 +6,7 @@ import './SalesmenPage.scss';
 
 /**
  * Salesmen Page component
- * Manages salesmen (profiles with role HANDLOWIEC)
+ * Manages salesmen (profiles with role TRADER)
  */
 const SalesmenPage = () => {
   const [salesmen, setSalesmen] = useState([]);
@@ -45,13 +45,27 @@ const SalesmenPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form fields
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      alert('Wszystkie pola są wymagane');
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert('Nieprawidłowy format emaila');
+      return;
+    }
+    
     try {
       if (editingSalesman) {
         await api.put(`/api/salesmen/${editingSalesman.id}`, formData);
       } else {
         await api.post('/api/salesmen', {
           ...formData,
-          role: 'HANDLOWIEC'
+          role: 'TRADER'
         });
       }
       fetchSalesmen();
@@ -60,7 +74,20 @@ const SalesmenPage = () => {
       setFormData({ firstName: '', lastName: '', email: '' });
     } catch (error) {
       console.error('Error saving salesman:', error);
-      alert('Błąd podczas zapisywania handlowca');
+      
+      // More detailed error messages
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message ||
+                          error.message ||
+                          'Błąd podczas zapisywania handlowca';
+      
+      if (error.response?.status === 409 || errorMessage.includes('duplicate') || errorMessage.includes('already exists')) {
+        alert('Email już istnieje w systemie. Proszę użyć innego emaila.');
+      } else if (error.response?.status === 400) {
+        alert(`Błąd walidacji: ${errorMessage}`);
+      } else {
+        alert(`Błąd: ${errorMessage}`);
+      }
     }
   };
 

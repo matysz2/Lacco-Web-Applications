@@ -35,9 +35,15 @@ api.interceptors.response.use(
   (error) => {
     // Handle 401 Unauthorized - token expired or invalid
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const requestUrl = error.config?.url || '';
+      const authEndpoints = ['/auth/login', '/auth/register', '/auth/reset-password', '/auth/request-password-reset'];
+      const isAuthRequest = authEndpoints.some((path) => requestUrl.endsWith(path));
+
+      if (!isAuthRequest) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
 
     // Handle other errors

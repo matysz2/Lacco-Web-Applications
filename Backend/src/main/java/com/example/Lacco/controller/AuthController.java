@@ -2,17 +2,21 @@ package com.example.Lacco.controller;
 
 import com.example.Lacco.model.dto.LoginRequest;
 import com.example.Lacco.model.dto.LoginResponse;
+import com.example.Lacco.model.dto.PasswordResetRequest;
 import com.example.Lacco.model.dto.ProfileResponse;
 import com.example.Lacco.model.entity.Profile;
 import com.example.Lacco.repository.ProfileRepository;
 import com.example.Lacco.service.AuthService;
+import com.example.Lacco.config.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -29,6 +33,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final ProfileRepository profileRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     /**
      * Authenticates a user and returns a session token.
@@ -63,8 +69,13 @@ public class AuthController {
                     .body(new ErrorResponse("Token missing"));
             }
 
-            UUID userId = UUID.fromString(token);
-            Profile profile = profileRepository.findById(userId)
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Invalid or expired token"));
+            }
+
+            String email = jwtUtil.extractUsername(token);
+            Profile profile = profileRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User profile not found"));
 
             ProfileResponse response = new ProfileResponse(
@@ -94,6 +105,55 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         log.info("Logout request processed");
         return ResponseEntity.ok(new MessageResponse("Logged out successfully"));
+    }
+
+    /**
+     * Requests a password reset email.
+     * Generates a reset token and sends it to the user's email.
+     */
+    @PostMapping("/request-password-reset")
+    public ResponseEntity<?> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        log.info("Password reset request initiated for email: {}", request.email());
+        try {
+            authService.requestPasswordReset(request.email());
+            return ResponseEntity.ok(new MessageResponse("Password reset link has been sent to your email"));
+        } catch (RuntimeException e) {
+            log.error("Password reset request failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("Failed to process password reset request"));
+        }
+    }
+
+    /**
+     * Resets user password using token.
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        log.info("Password reset request for token: {}", token);
+        try {
+            Profile profile = profileRepository.findByPasswordResetToken(token);
+            if (profile == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Invalid token"));
+            }
+
+            if (profile.getTokenExpiry().isBefore(OffsetDateTime.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Token expired"));
+            }
+
+            profile.setPasswordHash(passwordEncoder.encode(newPassword));
+            profile.setPasswordResetToken(null);
+            profile.setTokenExpiry(null);
+            profile.setUpdatedAt(OffsetDateTime.now());
+            profileRepository.save(profile);
+
+            return ResponseEntity.ok(new MessageResponse("Password set successfully"));
+        } catch (Exception e) {
+            log.error("Password reset error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("Password reset failed"));
+        }
     }
 
     private record ErrorResponse(String error) {}

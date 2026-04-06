@@ -34,6 +34,13 @@ const DashboardHome = () => {
     }
   };
 
+  const formatTopSalesman = (topSalesman) => {
+    if (!Array.isArray(topSalesman) || topSalesman.length < 2 || topSalesman[1] == null) {
+      return 'Brak danych';
+    }
+    return `${Number.parseFloat(topSalesman[1]).toFixed(2)} PLN`;
+  };
+
   if (loading) {
     return <div className="loading">Ładowanie statystyk...</div>;
   }
@@ -67,7 +74,7 @@ const DashboardHome = () => {
           <div className="stat-content">
             <h3>Najlepszy handlowiec</h3>
             <p className="stat-value">
-              {stats?.topSalesmanOverall ? `${stats.topSalesmanOverall[1]?.toFixed(2)} PLN` : 'Brak danych'}
+              {formatTopSalesman(stats?.topSalesmanOverall)}
             </p>
           </div>
         </div>
@@ -78,7 +85,7 @@ const DashboardHome = () => {
           <div className="stat-content">
             <h3>Najlepszy w miesiącu</h3>
             <p className="stat-value">
-              {stats?.topSalesmanMonthly ? `${stats.topSalesmanMonthly[1]?.toFixed(2)} PLN` : 'Brak danych'}
+              {formatTopSalesman(stats?.topSalesmanMonthly)}
             </p>
           </div>
         </div>

@@ -10,19 +10,23 @@ import './CustomersPage.scss';
  */
 const CustomersPage = () => {
   const [customers, setCustomers] = useState([]);
+  const [salesmen, setSalesmen] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    contactInfo: '',
-    address: '',
-    phone: '',
-    email: ''
+    nazwaFirmy: '',
+    telefon: '',
+    adres: '',
+    region: '',
+    handlowiec: '',
+    statusWizyty: '',
+    opisNotatki: ''
   });
 
   useEffect(() => {
     fetchCustomers();
+    fetchSalesmen();
   }, []);
 
   const fetchCustomers = async () => {
@@ -36,6 +40,15 @@ const CustomersPage = () => {
     }
   };
 
+  const fetchSalesmen = async () => {
+    try {
+      const response = await api.get('/api/salesmen');
+      setSalesmen(response.data);
+    } catch (error) {
+      console.error('Error fetching salesmen:', error);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -46,16 +59,29 @@ const CustomersPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      ...formData,
+      handlowiec: formData.handlowiec || null
+    };
+
     try {
       if (editingCustomer) {
-        await api.put(`/customers/${editingCustomer.id}`, formData);
+        await api.put(`/api/customers/${editingCustomer.id}`, payload);
       } else {
-        await api.post('/api/customers', formData);
+        await api.post('/api/customers', payload);
       }
       fetchCustomers();
       setShowModal(false);
       setEditingCustomer(null);
-      setFormData({ name: '', contactInfo: '', address: '', phone: '', email: '' });
+      setFormData({
+        nazwaFirmy: '',
+        telefon: '',
+        adres: '',
+        region: '',
+        handlowiec: '',
+        statusWizyty: '',
+        opisNotatki: ''
+      });
     } catch (error) {
       console.error('Error saving customer:', error);
       alert('Błąd podczas zapisywania klienta');
@@ -65,19 +91,21 @@ const CustomersPage = () => {
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
     setFormData({
-      name: customer.name,
-      contactInfo: customer.contactInfo,
-      address: customer.address,
-      phone: customer.phone,
-      email: customer.email
+      nazwaFirmy: customer.nazwaFirmy || '',
+      telefon: customer.telefon || '',
+      adres: customer.adres || '',
+      region: customer.region || '',
+      handlowiec: customer.handlowiec || '',
+      statusWizyty: customer.statusWizyty || '',
+      opisNotatki: customer.opisNotatki || ''
     });
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Czy na pewno chcesz usunąć tego klienta?')) {
+    if (globalThis.confirm('Czy na pewno chcesz usunąć tego klienta?')) {
       try {
-        await api.delete(`/customers/${id}`);
+        await api.delete(`/api/customers/${id}`);
         fetchCustomers();
       } catch (error) {
         console.error('Error deleting customer:', error);
@@ -88,16 +116,34 @@ const CustomersPage = () => {
 
   const handleAdd = () => {
     setEditingCustomer(null);
-    setFormData({ name: '', contactInfo: '', address: '', phone: '', email: '' });
+    setFormData({
+      nazwaFirmy: '',
+      telefon: '',
+      adres: '',
+      region: '',
+      handlowiec: '',
+      statusWizyty: '',
+      opisNotatki: ''
+    });
     setShowModal(true);
   };
 
+  const getSalesmanName = (salesmanId) => {
+    const salesman = salesmen.find((item) => item.id === salesmanId);
+    return salesman ? `${salesman.firstName} ${salesman.lastName}` : 'Brak';
+  };
+
   const columns = [
-    { key: 'name', label: 'Nazwa', sortable: true },
-    { key: 'contactInfo', label: 'Informacje kontaktowe', sortable: true },
-    { key: 'address', label: 'Adres', sortable: true },
-    { key: 'phone', label: 'Telefon', sortable: true },
-    { key: 'email', label: 'Email', sortable: true }
+    { key: 'nazwaFirmy', label: 'Nazwa firmy', sortable: true },
+    { key: 'telefon', label: 'Telefon', sortable: true },
+    { key: 'adres', label: 'Adres', sortable: true },
+    { key: 'region', label: 'Region', sortable: true },
+    {
+      key: 'handlowiec',
+      label: 'Handlowiec',
+      sortable: true,
+      render: (value) => getSalesmanName(value)
+    }
   ];
 
   const actions = [
@@ -140,58 +186,76 @@ const CustomersPage = () => {
       >
         <form onSubmit={handleSubmit} className="customer-form">
           <div className="form-group">
-            <label htmlFor="name">Nazwa</label>
+            <label htmlFor="nazwaFirmy">Nazwa firmy</label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="nazwaFirmy"
+              name="nazwaFirmy"
+              value={formData.nazwaFirmy}
               onChange={handleInputChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="contactInfo">Informacje kontaktowe</label>
-            <input
-              type="text"
-              id="contactInfo"
-              name="contactInfo"
-              value={formData.contactInfo}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="address">Adres</label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">Telefon</label>
+            <label htmlFor="telefon">Telefon</label>
             <input
               type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="telefon"
+              name="telefon"
+              value={formData.telefon}
               onChange={handleInputChange}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="adres">Adres</label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              id="adres"
+              name="adres"
+              value={formData.adres}
               onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="region">Region</label>
+            <input
+              type="text"
+              id="region"
+              name="region"
+              value={formData.region}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="handlowiec">Handlowiec</label>
+            <select
+              id="handlowiec"
+              name="handlowiec"
+              value={formData.handlowiec}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Wybierz handlowca</option>
+              {salesmen.map((salesman) => (
+                <option key={salesman.id} value={salesman.id}>
+                  {salesman.firstName} {salesman.lastName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="opisNotatki">Uwagi</label>
+            <textarea
+              id="opisNotatki"
+              name="opisNotatki"
+              value={formData.opisNotatki}
+              onChange={handleInputChange}
+              rows="3"
             />
           </div>
 

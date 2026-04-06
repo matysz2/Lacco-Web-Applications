@@ -14,10 +14,15 @@ const WarehousePage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    quantityInStock: 0,
-    pricePerKg: 0
+    kodProduktu: '',
+    grupa: '',
+    jm: '',
+    nazwa: '',
+    opakowanie: 0,
+    cenaProdukcji: 0,
+    cenaA: 0,
+    cenaB: 0,
+    cenaC: 0
   });
 
   useEffect(() => {
@@ -39,7 +44,9 @@ const WarehousePage = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name.includes('quantity') || name.includes('price') ? parseFloat(value) || 0 : value
+      [name]: ['opakowanie', 'cenaProdukcji', 'cenaA', 'cenaB', 'cenaC'].includes(name)
+        ? Number.parseFloat(value) || 0
+        : value
     }));
   };
 
@@ -54,7 +61,17 @@ const WarehousePage = () => {
       fetchProducts();
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({ name: '', description: '', quantityInStock: 0, pricePerKg: 0 });
+      setFormData({
+        kodProduktu: '',
+        grupa: '',
+        jm: '',
+        nazwa: '',
+        opakowanie: 0,
+        cenaProdukcji: 0,
+        cenaA: 0,
+        cenaB: 0,
+        cenaC: 0
+      });
     } catch (error) {
       console.error('Error saving product:', error);
       alert('Błąd podczas zapisywania produktu');
@@ -64,16 +81,21 @@ const WarehousePage = () => {
   const handleEdit = (product) => {
     setEditingProduct(product);
     setFormData({
-      name: product.name,
-      description: product.description,
-      quantityInStock: product.quantityInStock,
-      pricePerKg: product.pricePerKg
+      kodProduktu: product.kodProduktu || '',
+      grupa: product.grupa || '',
+      jm: product.jm || '',
+      nazwa: product.nazwa || '',
+      opakowanie: product.opakowanie || 0,
+      cenaProdukcji: product.cenaProdukcji || 0,
+      cenaA: product.cenaA || 0,
+      cenaB: product.cenaB || 0,
+      cenaC: product.cenaC || 0
     });
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Czy na pewno chcesz usunąć ten produkt?')) {
+    if (globalThis.confirm('Czy na pewno chcesz usunąć ten produkt?')) {
       try {
         await api.delete(`/api/products/${id}`);
         fetchProducts();
@@ -86,24 +108,48 @@ const WarehousePage = () => {
 
   const handleAdd = () => {
     setEditingProduct(null);
-    setFormData({ name: '', description: '', quantityInStock: 0, pricePerKg: 0 });
+    setFormData({
+      kodProduktu: '',
+      grupa: '',
+      jm: '',
+      nazwa: '',
+      opakowanie: 0,
+      cenaProdukcji: 0,
+      cenaA: 0,
+      cenaB: 0,
+      cenaC: 0
+    });
     setShowModal(true);
   };
 
   const columns = [
-    { key: 'name', label: 'Nazwa', sortable: true },
-    { key: 'description', label: 'Opis', sortable: true },
+    { key: 'kodProduktu', label: 'Kod produktu', sortable: true },
+    { key: 'nazwa', label: 'Nazwa', sortable: true },
+    { key: 'grupa', label: 'Grupa', sortable: true },
+    { key: 'jm', label: 'Jm', sortable: true },
     {
-      key: 'quantityInStock',
-      label: 'Ilość w magazynie',
+      key: 'opakowanie',
+      label: 'Opakowanie',
       sortable: true,
-      render: (value) => `${value} kg`
+      render: (value) => value !== null && value !== undefined ? value.toString() : '-'
     },
     {
-      key: 'pricePerKg',
-      label: 'Cena za kg',
+      key: 'cenaA',
+      label: 'Cena A',
       sortable: true,
-      render: (value) => `${value} PLN`
+      render: (value) => value !== null && value !== undefined ? `${value.toFixed(2)} PLN` : '-'
+    },
+    {
+      key: 'cenaB',
+      label: 'Cena B',
+      sortable: true,
+      render: (value) => value !== null && value !== undefined ? `${value.toFixed(2)} PLN` : '-'
+    },
+    {
+      key: 'cenaC',
+      label: 'Cena C',
+      sortable: true,
+      render: (value) => value !== null && value !== undefined ? `${value.toFixed(2)} PLN` : '-'
     }
   ];
 
@@ -147,53 +193,113 @@ const WarehousePage = () => {
       >
         <form onSubmit={handleSubmit} className="product-form">
           <div className="form-group">
-            <label htmlFor="name">Nazwa</label>
+            <label htmlFor="kodProduktu">Kod produktu</label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="kodProduktu"
+              name="kodProduktu"
+              value={formData.kodProduktu}
               onChange={handleInputChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="description">Opis</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
+            <label htmlFor="nazwa">Nazwa</label>
+            <input
+              type="text"
+              id="nazwa"
+              name="nazwa"
+              value={formData.nazwa}
               onChange={handleInputChange}
-              rows="3"
+              required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="quantityInStock">Ilość w magazynie (kg)</label>
+            <label htmlFor="grupa">Grupa</label>
+            <input
+              type="text"
+              id="grupa"
+              name="grupa"
+              value={formData.grupa}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="jm">Jednostka miary</label>
+            <input
+              type="text"
+              id="jm"
+              name="jm"
+              value={formData.jm}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="opakowanie">Opakowanie</label>
             <input
               type="number"
-              id="quantityInStock"
-              name="quantityInStock"
-              value={formData.quantityInStock}
+              id="opakowanie"
+              name="opakowanie"
+              value={formData.opakowanie}
               onChange={handleInputChange}
               step="0.01"
               min="0"
-              required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="pricePerKg">Cena za kg (PLN)</label>
+            <label htmlFor="cenaProdukcji">Cena produkcji (PLN)</label>
             <input
               type="number"
-              id="pricePerKg"
-              name="pricePerKg"
-              value={formData.pricePerKg}
+              id="cenaProdukcji"
+              name="cenaProdukcji"
+              value={formData.cenaProdukcji}
               onChange={handleInputChange}
               step="0.01"
               min="0"
-              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="cenaA">Cena A (PLN)</label>
+            <input
+              type="number"
+              id="cenaA"
+              name="cenaA"
+              value={formData.cenaA}
+              onChange={handleInputChange}
+              step="0.01"
+              min="0"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="cenaB">Cena B (PLN)</label>
+            <input
+              type="number"
+              id="cenaB"
+              name="cenaB"
+              value={formData.cenaB}
+              onChange={handleInputChange}
+              step="0.01"
+              min="0"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="cenaC">Cena C (PLN)</label>
+            <input
+              type="number"
+              id="cenaC"
+              name="cenaC"
+              value={formData.cenaC}
+              onChange={handleInputChange}
+              step="0.01"
+              min="0"
             />
           </div>
 

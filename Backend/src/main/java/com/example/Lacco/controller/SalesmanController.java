@@ -4,6 +4,8 @@ import com.example.Lacco.model.dto.ProfileResponse;
 import com.example.Lacco.service.SalesmanService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,10 +39,21 @@ public class SalesmanController {
     }
 
     @PostMapping
-    public ResponseEntity<ProfileResponse> createSalesman(@RequestBody ProfileResponse profileResponse) {
+    public ResponseEntity<?> createSalesman(@RequestBody ProfileResponse profileResponse) {
         log.info("Creating new salesman: {}", profileResponse.firstName() + " " + profileResponse.lastName());
-        ProfileResponse created = salesmanService.createSalesman(profileResponse);
-        return ResponseEntity.ok(created);
+        try {
+            ProfileResponse created = salesmanService.createSalesman(profileResponse);
+            return ResponseEntity.ok(created);
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("duplicate") || 
+                e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().contains("duplicate")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("Email już istnieje w systemie"));
+            }
+            log.error("Error creating salesman: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("Błąd podczas tworzenia handlowca"));
+        }
     }
 
     @PutMapping("/{id}")
@@ -56,4 +69,6 @@ public class SalesmanController {
         salesmanService.deleteSalesman(id);
         return ResponseEntity.noContent().build();
     }
+
+    private record ErrorResponse(String error) {}
 }

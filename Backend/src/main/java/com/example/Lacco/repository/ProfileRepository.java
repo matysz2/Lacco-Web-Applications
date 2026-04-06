@@ -22,4 +22,9 @@ public interface ProfileRepository extends JpaRepository<Profile, UUID> {
      * Find profiles by role
      */
     List<Profile> findByRole(String role);
+
+    /**
+     * Find profile by password reset token
+     */
+    Profile findByPasswordResetToken(String token);
 }

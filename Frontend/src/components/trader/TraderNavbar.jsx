@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './TraderNavbar.scss';
+import iconLogo from '../../assets/icon.png';
+
 
 /**
  * Trader Navbar component
@@ -34,12 +36,12 @@ const TraderNavbar = ({ user }) => {
     { path: '/trader/account', label: 'Ustawienie konta', icon: '⚙️' },
   ];
 
-  return (
+ return (
     <nav className="trader-navbar">
       <div className="navbar-container">
         <div className="navbar-brand">
-          <img src="/lacco.png" alt="Lacco" className="brand-logo" />
-          <span className="brand-text">Lacco - Handlowiec</span>
+          {/* Używamy zaimportowanej zmiennej w klamrach {} */}
+          <img src={iconLogo} alt="Lacco" className="brand-logo" />
         </div>
 
         {/* User Info */}
@@ -70,7 +72,7 @@ const TraderNavbar = ({ user }) => {
             onClick={handleLogout}
             title="Wyloguj się"
           >
-            🚪 Wyloguj się
+            🚪 
           </button>
         </div>
 
@@ -109,7 +111,7 @@ const TraderNavbar = ({ user }) => {
               handleLogout();
             }}
           >
-            🚪 Wyloguj się
+            🚪Wyloguj się
           </button>
         </div>
       )}

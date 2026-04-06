@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './AdminNavbar.scss';
+import iconLogo from '../../assets/icon.png';
 
 /**
  * Admin Navbar component
@@ -22,7 +23,7 @@ const AdminNavbar = ({ onLogout }) => {
     { path: '/admin/dashboard', label: 'Strona główna', icon: '🏠' },
     { path: '/admin/handlowcy', label: 'Handlowcy', icon: '👥' },
     { path: '/admin/klienci', label: 'Klienci', icon: '👤' },
-    { path: '/admin/statystyki', label: 'Statystyki sprzedaży', icon: '📊' },
+    { path: '/admin/statystyki', label: 'Statystyki', icon: '📊' },
     { path: '/admin/magazyn', label: 'Magazyn', icon: '📦' },
     { path: '/admin/zamowienia', label: 'Zamówienia', icon: '📋' },
   ];
@@ -30,12 +31,13 @@ const AdminNavbar = ({ onLogout }) => {
   return (
     <nav className="admin-navbar">
       <div className="navbar-container">
+        {/* LOGO SEKCOJA */}
         <div className="navbar-brand">
-          <img src="/lacco.png" alt="Lacco" className="brand-logo" />
+          <img src={iconLogo} alt="Lacco" className="brand-logo" />
           <span className="brand-text">Lacco</span>
         </div>
 
-        {/* Desktop Menu */}
+        {/* MENU DESKTOP */}
         <div className="navbar-menu desktop-menu">
           {navItems.map((item) => (
             <Link
@@ -49,18 +51,19 @@ const AdminNavbar = ({ onLogout }) => {
           ))}
         </div>
 
-        {/* Logout Button */}
+        {/* PRZYCISK WYLOGOWANIA */}
         <div className="navbar-actions">
           <button
             className="logout-btn"
             onClick={onLogout}
             title="Wyloguj się"
           >
-            🚪 Wyloguj się
+            <span className="logout-icon">🚪</span>
+            <span className="logout-text">Wyloguj</span>
           </button>
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* HAMBURGER (MOBILE) */}
         <div className="mobile-menu-toggle">
           <button
             className="hamburger-btn"
@@ -74,7 +77,7 @@ const AdminNavbar = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* MENU MOBILNE */}
       {isMobileMenuOpen && (
         <div className="mobile-menu">
           {navItems.map((item) => (

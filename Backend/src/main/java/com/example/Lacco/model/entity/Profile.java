@@ -54,4 +54,10 @@ public class Profile {
 
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+
+    @Column(name = "token_expiry")
+    private OffsetDateTime tokenExpiry;
 }
