@@ -35,25 +35,50 @@ const OrdersPage = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const [ordersResponse, customersResponse, salesmenResponse, productsResponse] = await Promise.all([
-        api.get('/api/orders'),
-        api.get('/api/customers'),
-        api.get('/api/salesmen'),
-        api.get('/api/products')
-      ]);
-      setOrders(ordersResponse.data);
-      setCustomers(customersResponse.data);
-      setSalesmen(salesmenResponse.data);
-      setProducts(productsResponse.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchData = async () => {
+  try {
+    setLoading(true);
+    // 1. Dodajemy pobieranie produktów do Promise.all
+    const [ordersRes, customersRes, salesmenRes, productsRes] = await Promise.all([
+      api.get('/api/orders'),
+      api.get('/api/customers'),
+      api.get('/api/salesmen'),
+      api.get('/api/products') // Tego brakowało
+    ]);
 
+    const customersData = customersRes.data || [];
+    const salesmenData = salesmenRes.data || [];
+    const productsData = productsRes.data || [];
+
+    // 2. Mapujemy zamówienia, aby DataTable widziała gotowe teksty
+    const mappedOrders = (ordersRes.data || []).map(order => {
+      const customer = customersData.find(c => String(c.id) === String(order.klientId));
+      const salesman = salesmenData.find(s => String(s.id).toLowerCase() === String(order.handlowiecId).toLowerCase());
+      
+      const d = new Date(order.createdAt);
+      const formattedDate = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+
+      return {
+        ...order,
+        displayKlient: customer ? customer.nazwaFirmy : `ID: ${order.klientId}`,
+        displayHandlowiec: salesman ? `${salesman.firstName} ${salesman.lastName}` : order.handlowiecId,
+        displayBrutto: `${Number(order.sumaBrutto || 0).toFixed(2)} PLN`,
+        displayNetto: `${Number(order.sumaNetto || 0).toFixed(2)} PLN`,
+        displayDate: formattedDate
+      };
+    });
+
+    // 3. Ustawiamy wszystkie stany
+    setCustomers(customersData);
+    setSalesmen(salesmenData);
+    setProducts(productsData); // Ustawiamy produkty
+    setOrders(mappedOrders);
+  } catch (error) {
+    console.error('Błąd podczas pobierania danych:', error);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -138,24 +163,31 @@ const OrdersPage = () => {
     }
   };
 
-  const handleEdit = (order) => {
+const handleEdit = (order) => {
     setEditingOrder(order);
+    
+    // 1. Mapujemy pozycje zamówienia (zabezpieczenie przed brakiem danych)
     const items = order.orderItems ? order.orderItems.map(item => ({
       produktId: item.produktId,
       ilosc: item.ilosc,
       cenaZastosowana: item.cenaZastosowana,
-      nazwa: item.nazwa
+      nazwa: item.nazwa || (products.find(p => p.id === item.produktId)?.nazwa || '')
     })) : [];
+
+    // 2. Ustawiamy dane w formularzu, obsługując oba warianty kluczy (polskie i angielskie)
     setFormData({
-      klientId: order.klientId ?? order.customerId ?? '',
-      handlowiecId: order.handlowiecId ?? order.salesmanId ?? '',
+      klientId: order.klientId || order.customerId || '',
+      handlowiecId: order.handlowiecId || order.salesmanId || '',
       status: order.status,
-      sumaBrutto: calculateBrutto(items),
-      sumaNetto: calculateNetto(items),
-      uwagi: order.uwagi ?? '',
-      numerZamowienia: order.numerZamowienia ?? '',
+      // Używamy sumy z obiektu lub przeliczamy ją na nowo z pozycji
+      sumaBrutto: order.sumaBrutto || calculateBrutto(items),
+      sumaNetto: order.sumaNetto || calculateNetto(items),
+      uwagi: order.uwagi || '',
+      numerZamowienia: order.numerZamowienia || '',
       orderItems: items
     });
+
+    // 3. Otwieramy okno edycji
     setShowModal(true);
   };
 
@@ -205,28 +237,17 @@ const OrdersPage = () => {
     }
   };
 
-  const getCustomerName = (customerId) => {
-    const customer = customers.find((c) => c.id === customerId);
-    return customer ? customer.nazwaFirmy : 'Nieznany';
-  };
-
-  const getSalesmanName = (salesmanId) => {
-    const salesman = salesmen.find((s) => s.id === salesmanId);
-    return salesman ? `${salesman.firstName} ${salesman.lastName}` : 'Nieznany';
-  };
-
+// Kolumny korzystają z gotowych pól "display", które robimy w fetchData
   const columns = [
     {
-      key: 'klientId',
+      key: 'displayKlient',
       label: 'Klient',
-      sortable: true,
-      render: (value, item) => getCustomerName(item.klientId ?? item.customerId)
+      sortable: true
     },
     {
-      key: 'handlowiecId',
+      key: 'displayHandlowiec',
       label: 'Handlowiec',
-      sortable: true,
-      render: (value, item) => getSalesmanName(item.handlowiecId ?? item.salesmanId)
+      sortable: true
     },
     {
       key: 'status',
@@ -239,22 +260,19 @@ const OrdersPage = () => {
       )
     },
     {
-      key: 'sumaBrutto',
+      key: 'displayBrutto',
       label: 'Wartość',
-      sortable: true,
-      render: (value, item) => `${(item.sumaBrutto ?? item.totalAmount)?.toFixed(2) || '0.00'} PLN`
+      sortable: true
     },
     {
-      key: 'sumaNetto',
+      key: 'displayNetto',
       label: 'Wartość netto',
-      sortable: true,
-      render: (value, item) => `${(item.sumaNetto ?? 0)?.toFixed(2) || '0.00'} PLN`
+      sortable: true
     },
     {
-      key: 'createdAt',
+      key: 'displayDate',
       label: 'Data utworzenia',
-      sortable: true,
-      render: (value) => new Date(value).toLocaleDateString('pl-PL')
+      sortable: true
     }
   ];
 
@@ -276,15 +294,9 @@ const OrdersPage = () => {
                          item.status === 'IN_PROGRESS' ? 'COMPLETED' : 'NEW';
         handleStatusChange(item.id, newStatus);
       },
-      className: 'status-btn',
-      render: (item) => {
-        const nextStatus = item.status === 'NEW' ? 'W trakcie' :
-                          item.status === 'IN_PROGRESS' ? 'Zakończone' : 'Nowe';
-        return `→ ${nextStatus}`;
-      }
+      className: 'status-btn'
     }
   ];
-
   if (loading) {
     return <div className="loading">Ładowanie zamówień...</div>;
   }

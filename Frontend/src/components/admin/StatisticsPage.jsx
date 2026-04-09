@@ -31,17 +31,37 @@ const StatisticsPage = () => {
   };
 
   // Calculate additional statistics
-  const calculateStats = () => {
+const calculateStats = () => {
     const totalOrders = orders.length;
     const completedOrders = orders.filter(o => o.status === 'COMPLETED').length;
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-    const totalWeight = orders.reduce((sum, order) => sum + (order.totalWeight || 0), 0);
+
+    // Obliczanie przychodu (sumaBrutto) i wagi z pozycji zamówienia
+    const totals = orders.reduce((acc, order) => {
+      // 1. Sumowanie pieniędzy (obsługujemy różne możliwe nazwy pól)
+      const amount = order.sumaBrutto || order.totalAmount || 0;
+      acc.revenue += Number(amount);
+
+      // 2. Sumowanie wagi - musimy zajrzeć do pozycji zamówienia (orderItems)
+      // Jeśli produkt ma wagę, sumujemy: ilość * waga_jednostkowa
+      if (order.orderItems && Array.isArray(order.orderItems)) {
+        order.orderItems.forEach(item => {
+          // Tutaj zakładamy, że waga może być w item.waga lub stała (np. 1kg na sztukę dla lakierów)
+          // Jeśli nie ma wagi w bazie, na razie liczymy sztuki jako kg, żeby nie było 0
+          const weight = item.waga || 1; 
+          acc.weight += (item.ilosc * weight);
+        });
+      } else if (order.totalWeight) {
+        acc.weight += order.totalWeight;
+      }
+
+      return acc;
+    }, { revenue: 0, weight: 0 });
 
     return {
       totalOrders,
       completedOrders,
-      totalRevenue,
-      totalWeight,
+      totalRevenue: totals.revenue,
+      totalWeight: totals.weight,
       completionRate: totalOrders > 0 ? (completedOrders / totalOrders * 100).toFixed(1) : 0
     };
   };
@@ -120,28 +140,41 @@ const StatisticsPage = () => {
         </div>
       </div>
 
-      <div className="top-performers">
+<div className="top-performers">
         <h2>Najlepsi handlowcy</h2>
         <div className="performer-card">
           <h3>Ogólnie</h3>
-          <p>
-            {stats?.topSalesmanOverall ?
-              `Najlepszy wynik: ${stats.topSalesmanOverall[1]?.toFixed(2)} PLN` :
-              'Brak danych'
-            }
-          </p>
+          {stats?.topSalesmanOverall ? (
+            <div className="performer-info">
+              <p className="performer-name">
+                {stats.topSalesmanOverall[0]} {stats.topSalesmanOverall[1]}
+              </p>
+              <p className="performer-value">
+                Wynik: {Number(stats.topSalesmanOverall[2]).toFixed(2)} PLN
+              </p>
+            </div>
+          ) : (
+            <p>Brak danych</p>
+          )}
         </div>
+
         <div className="performer-card">
           <h3>W bieżącym miesiącu</h3>
-          <p>
-            {stats?.topSalesmanMonthly ?
-              `Najlepszy wynik: ${stats.topSalesmanMonthly[1]?.toFixed(2)} PLN` :
-              'Brak danych'
-            }
-          </p>
+          {stats?.topSalesmanMonthly ? (
+            <div className="performer-info">
+              <p className="performer-name">
+                {stats.topSalesmanMonthly[0]} {stats.topSalesmanMonthly[1]}
+              </p>
+              <p className="performer-value">
+                Wynik: {Number(stats.topSalesmanMonthly[2]).toFixed(2)} PLN
+              </p>
+            </div>
+          ) : (
+            <p>Brak danych</p>
+          )}
         </div>
       </div>
-    </div>
+      </div>
   );
 };
 

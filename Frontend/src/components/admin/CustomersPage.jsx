@@ -24,28 +24,38 @@ const CustomersPage = () => {
     opisNotatki: ''
   });
 
-  useEffect(() => {
-    fetchCustomers();
-    fetchSalesmen();
+useEffect(() => {
+    fetchData();
   }, []);
 
-  const fetchCustomers = async () => {
+  const fetchData = async () => {
     try {
-      const response = await api.get('/api/customers');
-      setCustomers(response.data);
+      setLoading(true);
+      const [customersRes, salesmenRes] = await Promise.all([
+        api.get('/api/customers'),
+        api.get('/api/salesmen')
+      ]);
+
+      const salesmenData = salesmenRes.data || [];
+      const customersData = customersRes.data || [];
+
+      // Mapujemy klientów, aby od razu przypisać imię handlowca
+      const mappedCustomers = customersData.map(customer => {
+        const s = salesmenData.find(item => 
+          String(item.id).toLowerCase() === String(customer.handlowiec).toLowerCase()
+        );
+        return {
+          ...customer,
+          displayHandlowiec: s ? `${s.firstName} ${s.lastName}` : 'Nieprzypisany'
+        };
+      });
+
+      setSalesmen(salesmenData);
+      setCustomers(mappedCustomers);
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error('Błąd podczas pobierania danych:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchSalesmen = async () => {
-    try {
-      const response = await api.get('/api/salesmen');
-      setSalesmen(response.data);
-    } catch (error) {
-      console.error('Error fetching salesmen:', error);
     }
   };
 
@@ -70,7 +80,6 @@ const CustomersPage = () => {
       } else {
         await api.post('/api/customers', payload);
       }
-      fetchCustomers();
       setShowModal(false);
       setEditingCustomer(null);
       setFormData({
@@ -102,17 +111,21 @@ const CustomersPage = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
+const handleDelete = async (id) => {
     if (globalThis.confirm('Czy na pewno chcesz usunąć tego klienta?')) {
       try {
         await api.delete(`/api/customers/${id}`);
-        fetchCustomers();
+        fetchData(); // Zmienione z fetchCustomers()
       } catch (error) {
         console.error('Error deleting customer:', error);
         alert('Błąd podczas usuwania klienta');
       }
     }
   };
+
+  // Tutaj usuwamy getSalesmanName - nie jest już potrzebne!
+
+
 
   const handleAdd = () => {
     setEditingCustomer(null);
@@ -128,21 +141,16 @@ const CustomersPage = () => {
     setShowModal(true);
   };
 
-  const getSalesmanName = (salesmanId) => {
-    const salesman = salesmen.find((item) => item.id === salesmanId);
-    return salesman ? `${salesman.firstName} ${salesman.lastName}` : 'Brak';
-  };
 
-  const columns = [
+const columns = [
     { key: 'nazwaFirmy', label: 'Nazwa firmy', sortable: true },
     { key: 'telefon', label: 'Telefon', sortable: true },
     { key: 'adres', label: 'Adres', sortable: true },
     { key: 'region', label: 'Region', sortable: true },
-    {
-      key: 'handlowiec',
-      label: 'Handlowiec',
-      sortable: true,
-      render: (value) => getSalesmanName(value)
+    { 
+      key: 'displayHandlowiec', // To pole tworzymy w fetchData
+      label: 'Handlowiec', 
+      sortable: true 
     }
   ];
 
