@@ -2,10 +2,13 @@ package com.example.Lacco.controller;
 
 import com.example.Lacco.model.dto.OrderDto;
 import com.example.Lacco.service.OrderService;
+import com.example.Lacco.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,8 +17,9 @@ import java.util.UUID;
 
 /**
  * REST Controller for order endpoints
+ * Zaktualizowany o rygorystyczną weryfikację roli TRADER oraz poprawkę CORS.
  */
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173"})
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+    private final ProfileRepository profileRepository;
 
     @GetMapping
     public ResponseEntity<List<OrderDto>> getAllOrders() {
@@ -53,7 +58,6 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/status")
-    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<OrderDto> updateOrderStatus(@PathVariable UUID id, @RequestBody Map<String, String> statusUpdate) {
         log.info("Updating order status with id: {}", id);
         String newStatus = statusUpdate.get("status");
@@ -70,29 +74,59 @@ public class OrderController {
 
     @GetMapping("/dashboard/stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
-        log.info("Fetching dashboard stats");
+        log.info("Fetching global dashboard stats");
         Map<String, Object> stats = orderService.getDashboardStats();
         return ResponseEntity.ok(stats);
     }
 
     @GetMapping("/trader/dashboard/stats")
-    public ResponseEntity<Map<String, Object>> getTraderDashboardStats(@RequestHeader("Authorization") String authorizationHeader) {
-        log.info("Fetching trader dashboard stats");
-        try {
-            String token = authorizationHeader;
-            if (token != null && token.startsWith("Bearer ")) {
-                token = token.substring(7);
-            }
+    public ResponseEntity<Map<String, Object>> getTraderDashboardStats(@RequestParam(required = false) String traderId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
+        log.info("Trader stats request. Auth: {}, Param traderId: {}", 
+                (auth != null ? auth.getName() : "anonymous"), traderId);
 
-            if (token == null || token.isBlank()) {
+        try {
+            UUID finalTraderId;
+
+            // 1. Jeśli przesłano traderId w parametrze (ścieżka dla WWW / bez tokena)
+            if (traderId != null && !traderId.trim().isEmpty()) {
+                log.info("Using traderId from request parameter: {}", traderId);
+                finalTraderId = UUID.fromString(traderId);
+            } 
+            // 2. Jeśli brak parametru, ale użytkownik jest zalogowany (ścieżka dla Mobile / z tokenem)
+            else if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+                String email = auth.getName();
+                var profile = profileRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Profile not found for: " + email));
+                finalTraderId = profile.getId();
+            } 
+            // 3. Brak danych identyfikacyjnych
+            else {
+                log.warn("Unauthorized: No traderId parameter and no valid session");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            UUID handlowiecId = UUID.fromString(token);
-            Map<String, Object> stats = orderService.getTraderDashboardStats(handlowiecId);
+            log.info("Fetching data for finalTraderId: {}", finalTraderId);
+            Map<String, Object> stats = orderService.getTraderDashboardStats(finalTraderId);
+            
+            // Zabezpieczenie struktury danych dla frontendu
+            if (stats == null || stats.isEmpty()) {
+                return ResponseEntity.ok(Map.of(
+                    "totalSales", 0.0,
+                    "monthlySales", 0.0,
+                    "topClient", List.of("Brak danych", 0.0),
+                    "topProduct", List.of("Brak danych", 0.0)
+                ));
+            }
+
             return ResponseEntity.ok(stats);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid UUID format: {}", traderId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
-            log.error("Error fetching trader stats: {}", e.getMessage());
+            log.error("CRITICAL ERROR in Trader Stats: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

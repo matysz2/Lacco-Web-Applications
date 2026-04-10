@@ -32,12 +32,11 @@ const AdminDashboard = () => {
 
     try {
       const response = await api.get('/auth/me', {
-        headers: { Authorization: token }
-      });
+headers: { Authorization: `Bearer ${token}` }      });
       setUser(response.data);
       if (response.data.role !== 'ADMIN') {
         // Redirect based on role
-        if (response.data.role === 'HANDLOWIEC') {
+        if (response.data.role === 'TRADER') {
           navigate('/trader/dashboard');
         } else {
           navigate('/login');
@@ -45,10 +44,9 @@ const AdminDashboard = () => {
         return;
       }
     } catch (error) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      console.error('Authentication error:', error);
       navigate('/login');
-    } finally {
+    }finally {
       setLoading(false);
     }
   };

@@ -21,7 +21,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Service for handling order operations
+ * Service do obsługi zamówień i statystyk dashboardu.
+ * Zaktualizowano logowanie i odporność na brak uprawnień/danych.
  */
 @Service
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class OrderService {
 
     public OrderDto getOrderById(UUID id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono zamówienia"));
         return toDto(order);
     }
 
@@ -63,7 +64,6 @@ public class OrderService {
                 .sumaNetto(orderDto.sumaNetto())
                 .build();
 
-        // Create order items
         if (orderDto.orderItems() != null) {
             List<OrderItem> items = orderDto.orderItems().stream()
                     .map(itemDto -> toOrderItemEntity(itemDto, order))
@@ -72,14 +72,13 @@ public class OrderService {
         }
 
         Order saved = orderRepository.save(order);
-
         return toDto(saved);
     }
 
     @Transactional
     public OrderDto updateOrder(UUID id, OrderDto orderDto) {
         Order existing = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono zamówienia"));
 
         existing.setNumerZamowienia(orderDto.numerZamowienia());
         existing.setKlientId(orderDto.klientId());
@@ -89,11 +88,8 @@ public class OrderService {
         existing.setHandlowiecId(orderDto.handlowiecId());
         existing.setSumaNetto(orderDto.sumaNetto());
 
-        // Update order items if provided
         if (orderDto.orderItems() != null) {
-            // Delete existing items
-            orderItemRepository.findByOrderId(id).forEach(item -> orderItemRepository.delete(item));
-            // Create new items
+            orderItemRepository.findByOrderId(id).forEach(orderItemRepository::delete);
             List<OrderItem> newItems = orderDto.orderItems().stream()
                     .map(itemDto -> toOrderItemEntity(itemDto, existing))
                     .collect(Collectors.toList());
@@ -101,25 +97,20 @@ public class OrderService {
         }
 
         Order saved = orderRepository.save(existing);
-
         return toDto(saved);
     }
 
     @Transactional
     public OrderDto updateOrderStatus(UUID id, String newStatus) {
         Order existing = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono zamówienia"));
         existing.setStatus(newStatus);
-
-        Order saved = orderRepository.save(existing);
-
-        return toDto(saved);
+        return toDto(orderRepository.save(existing));
     }
 
     public void deleteOrder(UUID id) {
         if (!orderRepository.existsById(id)) {
-            throw new RuntimeException("Order not found");
+            throw new RuntimeException("Nie znaleziono zamówienia");
         }
         orderRepository.deleteById(id);
     }
@@ -135,21 +126,24 @@ public class OrderService {
         List<Object[]> salesmanSales = orderRepository.getSalesmanTotalSales();
         List<Object[]> salesmanMonthlySales = orderRepository.getSalesmanSalesInMonth(startOfMonth, endOfMonth);
 
-        long newOrders = orderRepository.findByStatus("NEW").size();
-        long inProgressOrders = orderRepository.findByStatus("IN_PROGRESS").size();
-
         Map<String, Object> stats = new java.util.HashMap<>();
         stats.put("monthlySales", monthlySales != null ? monthlySales : BigDecimal.ZERO);
         stats.put("monthlyWeight", monthlyWeight != null ? monthlyWeight : BigDecimal.ZERO);
-        stats.put("topSalesmanOverall", salesmanSales.isEmpty() ? java.util.Collections.emptyList() : salesmanSales.get(0));
-        stats.put("topSalesmanMonthly", salesmanMonthlySales.isEmpty() ? java.util.Collections.emptyList() : salesmanMonthlySales.get(0));
-        stats.put("newOrdersCount", newOrders);
-        stats.put("inProgressOrdersCount", inProgressOrders);
+        stats.put("topSalesmanOverall", salesmanSales.isEmpty() ? null : salesmanSales.get(0));
+        stats.put("topSalesmanMonthly", salesmanMonthlySales.isEmpty() ? null : salesmanMonthlySales.get(0));
+        stats.put("newOrdersCount", orderRepository.findByStatus("NEW").size());
+        stats.put("inProgressOrdersCount", orderRepository.findByStatus("IN_PROGRESS").size());
 
         return stats;
     }
 
+    /**
+     * Zaktualizowana metoda statystyk handlowca.
+     * Dodano logowanie DEBUG dla weryfikacji danych bez Security.
+     */
     public Map<String, Object> getTraderDashboardStats(UUID handlowiecId) {
+        log.info("!!! POBIERANIE STATYSTYK DLA HANDLOWCA: {} !!!", handlowiecId);
+        
         YearMonth currentMonth = YearMonth.now();
         OffsetDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
         OffsetDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59).atOffset(OffsetDateTime.now().getOffset());
@@ -163,9 +157,12 @@ public class OrderService {
         Map<String, Object> stats = new java.util.HashMap<>();
         stats.put("totalSales", totalSales != null ? totalSales : BigDecimal.ZERO);
         stats.put("monthlySales", monthlySales != null ? monthlySales : BigDecimal.ZERO);
-        stats.put("topClient", topClient.isEmpty() ? null : topClient.get(0));
-        stats.put("topProduct", topProduct.isEmpty() ? null : topProduct.get(0));
+        
+        // Bezpieczne sprawdzanie list (zapobiega p1_0 index errors)
+        stats.put("topClient", (topClient == null || topClient.isEmpty()) ? null : topClient.get(0));
+        stats.put("topProduct", (topProduct == null || topProduct.isEmpty()) ? null : topProduct.get(0));
 
+        log.info("Statystyki obliczone pomyślnie dla handlowca {}", handlowiecId);
         return stats;
     }
 
@@ -213,7 +210,7 @@ public class OrderService {
                 .produktId(dto.produktId())
                 .ilosc(dto.ilosc())
                 .cenaZastosowana(dto.cenaZastosowana())
-                .createdAt(dto.createdAt())
+                .createdAt(dto.createdAt() != null ? dto.createdAt() : OffsetDateTime.now())
                 .wartoscNetto(dto.wartoscNetto())
                 .nazwa(dto.nazwa())
                 .opakowanie(dto.opakowanie())

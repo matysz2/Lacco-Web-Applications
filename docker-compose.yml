@@ -13,16 +13,24 @@ services:
       - db_data:/var/lib/postgresql/data
 
   backend:
-    build: ./Backend
+    # ZMIANA: Używamy obrazu z JDK (kompilatorem), aby móc uruchamiać kod na żywo
+    image: maven:3.9-eclipse-temurin-21 
     container_name: lacco-backend
+    working_dir: /app
     ports:
       - "8081:8081"
+    volumes:
+      - ./Backend:/app
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/lacco_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=lacco_password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - JAVA_OPTS=-Xmx512m -Xms256m
+    # ZMIANA: Nadpisujemy "entrypoint", aby Docker nie szukał app.jar z Twojego Dockerfile
+    entrypoint: 
+      - /bin/sh
+      - -c
+      - "./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Xmx512m'"
     deploy:
       resources:
         limits:
@@ -35,8 +43,12 @@ services:
   frontend:
     build: ./Frontend
     container_name: lacco-frontend
+    working_dir: /app
     ports:
       - "3000:3000"
+    environment:
+      - WATCHPACK_POLLING=true 
+      - CHOKIDAR_USEPOLLING=true
     command: npm run dev -- --host --port 3000
     volumes:
       - ./Frontend:/app

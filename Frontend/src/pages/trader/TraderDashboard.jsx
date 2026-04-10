@@ -35,7 +35,7 @@ const TraderDashboard = () => {
         headers: { Authorization: token }
       });
       setUser(response.data);
-      if (response.data.role !== 'HANDLOWIEC') {
+      if (response.data.role !== 'TRADER') {
         // Redirect based on role
         if (response.data.role === 'ADMIN') {
           navigate('/admin/dashboard');
@@ -44,10 +44,7 @@ const TraderDashboard = () => {
         }
         return;
       }
-    } catch (error) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      navigate('/login');
+    
     } finally {
       setLoading(false);
     }
