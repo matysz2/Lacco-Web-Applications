@@ -1,0 +1,182 @@
+// Definicja kolorów
+$bg-body: #f8f9fa;
+$white: #ffffff;
+$text-main: #2c3e50;
+$text-muted: #7f8c8d;
+$blue-primary: #3498db;
+$red-danger: #e74c3c;
+$green-success: #27ae60;
+$border-color: #e0e6ed;
+
+.products-container {
+  padding: 30px;
+  background-color: $bg-body;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  .inventory-header {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+
+    .title-section {
+      h1 {
+        margin: 0;
+        color: $text-main;
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+      .product-count {
+        color: $text-muted;
+        font-size: 0.9rem;
+      }
+    }
+
+    .search-wrapper {
+      width: 100%;
+
+      .search-bar-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        max-width: 800px; // Szerokie i czytelne pole
+
+        .search-icon {
+          position: absolute;
+          left: 15px;
+          color: $text-muted;
+          font-style: normal;
+        }
+
+        .modern-search {
+          width: 100%;
+          padding: 14px 14px 14px 45px;
+          font-size: 1rem;
+          border: 2px solid $border-color;
+          border-radius: 12px;
+          background: $white;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
+
+          &:focus {
+            outline: none;
+            border-color: $blue-primary;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+          }
+        }
+
+        .clear-search {
+          position: absolute;
+          right: 15px;
+          background: none;
+          border: none;
+          color: $text-muted;
+          cursor: pointer;
+          font-size: 1.1rem;
+          &:hover { color: $red-danger; }
+        }
+      }
+    }
+  }
+
+  .table-responsive {
+    background: $white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid $border-color;
+  }
+
+  .inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+
+    thead {
+      tr {
+        background-color: #fcfcfd;
+      }
+    }
+
+    th {
+      padding: 18px 15px;
+      text-align: left;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: $text-muted;
+      border-bottom: 2px solid $border-color;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 16px 15px;
+      border-bottom: 1px solid #f1f1f1;
+      color: $text-main;
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    
+    tr:hover { background-color: rgba(52, 152, 219, 0.02); }
+
+    // Style dla konkretnych kolumn
+    .code {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      color: #5d6d7e;
+    }
+
+    .name {
+      font-weight: 600;
+      color: $text-main;
+    }
+
+    .unit-tag {
+      background: #f0f3f5;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .stock-bold {
+      font-weight: 800;
+      font-size: 1rem;
+      
+      &.success { color: $green-success; }
+      &.warning { 
+        color: $red-danger; 
+        background: rgba(231, 76, 60, 0.1);
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+    }
+
+    .text-right {
+      text-align: right;
+    }
+  }
+}
+
+// Obsługa braku danych / ładowania
+.loader {
+  text-align: center;
+  padding: 100px;
+  font-size: 1.2rem;
+  color: $blue-primary;
+  font-weight: 600;
+}
+
+/* RWD - Dostosowanie do mniejszych ekranów */
+@media (max-width: 1024px) {
+  .products-container {
+    padding: 15px;
+    
+    .inventory-table {
+      min-width: 100%;
+    }
+  }
+}

@@ -22,9 +22,12 @@ import java.util.UUID;
 @Builder
 public class Product {
 
-    @Id
-    @Column(name = "id")
+ @Id
     private UUID id;
+
+    // mappedBy odnosi się do nazwy pola "product" w klasie WarehouseStock
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
+    private WarehouseStock stock;
 
     @Column(name = "kod_produktu", nullable = false)
     private String kodProduktu;

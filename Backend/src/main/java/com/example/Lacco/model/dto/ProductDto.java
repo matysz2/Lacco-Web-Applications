@@ -1,22 +1,19 @@
 package com.example.Lacco.model.dto;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * DTO for Product entity
- */
 public record ProductDto(
-    UUID id,
-    String kodProduktu,
-    String grupa,
-    String jm,
-    String nazwa,
-    BigDecimal opakowanie,
-    BigDecimal cenaProdukcji,
-    BigDecimal cenaA,
-    BigDecimal cenaB,
-    BigDecimal cenaC,
-    OffsetDateTime createdAt
+    UUID id,                 // 1
+    String kodProduktu,      // 2
+    String grupa,            // 3
+    String jm,               // 4
+    String nazwa,            // 5
+    BigDecimal opakowanie,   // 6
+    BigDecimal ilosc,        // 7
+    BigDecimal stanMinimalny,// 8
+    BigDecimal cenaA,        // 9
+    BigDecimal cenaB,        // 10
+    BigDecimal cenaC,        // 11
+    BigDecimal cenaProdukcji // 12
 ) {}
