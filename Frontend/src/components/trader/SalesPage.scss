@@ -1,0 +1,66 @@
+$primary: #2c3e50;
+$accent: #3498db;
+$success: #27ae60;
+
+.sales-container {
+  padding: 30px;
+
+  .sales-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    h1 { color: $primary; }
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+    padding: 15px;
+    background: $primary;
+    color: white;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+  }
+
+  .order-item {
+    border: 1px solid #eee;
+    margin-bottom: 5px;
+
+    .order-main {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+      padding: 15px;
+      cursor: pointer;
+      align-items: center;
+      &:hover { background: #f9f9f9; }
+
+      .order-num { font-weight: 700; color: $accent; }
+      .status { 
+        font-weight: bold;
+        &.nowe { color: $accent; }
+        &.zrealizowane { color: $success; }
+      }
+    }
+
+    .order-details {
+      padding: 20px;
+      background: #fcfcfc;
+      border-top: 2px solid $accent;
+
+      .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        th { text-align: left; color: #95a5a6; font-size: 0.8rem; }
+        td { padding: 10px 0; border-bottom: 1px solid #eee; }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .table-header { display: none; }
+  .order-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}

@@ -59,7 +59,9 @@ const AdminNavbar = ({ onLogout }) => {
             title="Wyloguj się"
           >
             <span className="logout-icon">🚪</span>
-            <span className="logout-text">Wyloguj</span>
+           <div className="logout-container">
+  <span className="tooltip-text">Wyloguj się</span>
+</div>
           </button>
         </div>
 

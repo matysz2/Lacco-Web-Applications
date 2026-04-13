@@ -62,7 +62,14 @@ public class SalesmanController {
         ProfileResponse updated = salesmanService.updateSalesman(id, profileResponse);
         return ResponseEntity.ok(updated);
     }
-
+@GetMapping("/me")
+public ResponseEntity<ProfileResponse> getCurrentProfile() {
+    // W profesjonalnym systemie ID pobierasz z SecurityContextHolder (z tokena JWT)
+    // Na potrzeby testów możesz przekazać stałe ID lub pobrać zalogowanego użytkownika
+    log.info("Fetching current user profile");
+    ProfileResponse profile = salesmanService.getCurrentProfile(); 
+    return ResponseEntity.ok(profile);
+}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSalesman(@PathVariable UUID id) {
         log.info("Deleting salesman with id: {}", id);

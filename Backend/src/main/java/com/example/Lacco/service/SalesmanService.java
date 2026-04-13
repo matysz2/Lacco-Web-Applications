@@ -5,6 +5,8 @@ import com.example.Lacco.model.entity.Profile;
 import com.example.Lacco.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -105,5 +107,11 @@ public class SalesmanService {
                 .email(dto.email())
                 .role(dto.role())
                 .build();
+    }
+    public ProfileResponse getCurrentProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Profile profile = profileRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono profilu dla zalogowanego użytkownika"));
+        return toDto(profile);
     }
 }

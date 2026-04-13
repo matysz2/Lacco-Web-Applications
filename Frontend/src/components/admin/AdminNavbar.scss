@@ -29,10 +29,54 @@
       font-size: 1.5rem;
       font-weight: bold;
       color: white;
-      margin: 0;
+      margin-right: 25px;
     }
   }
+.tooltip-text {
+  visibility: hidden;
+  width: 100px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Pozycja nad ikoną */
+  left: 50%;
+  margin-left: -50px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+}
 
+/* Strzałka pod tooltipem */
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+/* Pokazywanie po najechaniu */
+.logout-container:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.logout-icon {
+  font-size: 24px;
+  transition: transform 0.2s;
+}
+
+.logout-container:hover .logout-icon {
+  transform: scale(1.1); /* Delikatne powiększenie ikony przy okazji */
+}
   .navbar-menu {
     display: flex;
     gap: 30px;
