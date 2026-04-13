@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface LeadRepository extends JpaRepository<LeadStolarz, Long> {
+public interface LeadRepository extends JpaRepository<LeadStolarz, Integer> {
 
     // Filtrowanie po handlowcu (podstawa widoku)
     List<LeadStolarz> findByHandlowiec(String handlowiec);

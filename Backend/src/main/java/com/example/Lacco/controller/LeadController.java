@@ -50,11 +50,11 @@ public ResponseEntity<?> getLeads(
 }// <--- SPRAWDŹ CZY TEN NAWIAS TU JEST
 
 @DeleteMapping("/{id}")
-public void deleteLead(@PathVariable Long id) { // Zmieniono @RequestParam na @PathVariable
+public void deleteLead(@PathVariable Integer id) { // Zmieniono @RequestParam na @PathVariable
     repository.deleteById(id);
 }
 @PutMapping("/{id}")
-public ResponseEntity<?> updateLead(@PathVariable Long id, @RequestBody LeadStolarz updatedData) {
+public ResponseEntity<?> updateLead(@PathVariable Integer id, @RequestBody LeadStolarz updatedData) {
     return repository.findById(id)
         .map(lead -> {
             lead.setNazwaFirmy(updatedData.getNazwaFirmy());

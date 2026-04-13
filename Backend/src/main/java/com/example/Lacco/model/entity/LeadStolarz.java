@@ -13,7 +13,7 @@ public class LeadStolarz {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "nazwa_firmy")
     private String nazwaFirmy;

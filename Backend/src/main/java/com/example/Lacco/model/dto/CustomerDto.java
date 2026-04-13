@@ -1,26 +1,22 @@
 package com.example.Lacco.model.dto;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
-/**
- * DTO for Customer entity
- */
 public record CustomerDto(
     Integer id,
     String nazwaFirmy,
     String telefon,
     String adres,
     String region,
-    UUID handlowiec,
+    String handlowiec,
     LocalDate dataPozyskania,
     Boolean czyOdwiedzony,
     String statusWizyty,
     String opisNotatki,
-    OffsetDateTime dataOstatniejEdycji,
+    LocalDateTime dataOstatniejEdycji,
     String nawigacja,
     String stronaWww,
-    Integer grupaCenowa,
-    OffsetDateTime ostatniaWizyta
+    String grupaCenowa,
+    LocalDateTime ostatniaWizyta
 ) {}

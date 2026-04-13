@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 /**
@@ -24,30 +25,25 @@ import java.time.OffsetDateTime;
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nazwa_firmy", nullable = false)
+    @Column(name = "nazwa_firmy")
     private String nazwaFirmy;
 
-    @Column(name = "telefon")
-    private String telefon;
-
-    @Column(name = "adres")
     private String adres;
 
-    @Column(name = "region")
+    private String telefon;
+
+    @Column(name = "strona_www")
+    private String stronaWww;
+
     private String region;
 
-    @Column(name = "handlowiec")
-    private java.util.UUID handlowiec;
+    @Column(name = "grupa_cenowa")
+    private String grupaCenowa;
 
-    @Column(name = "data_pozyskania")
-    private LocalDate dataPozyskania;
-
-    @Column(name = "czy_odwiedzony")
-    private Boolean czyOdwiedzony;
+    private String handlowiec;
 
     @Column(name = "status_wizyty")
     private String statusWizyty;
@@ -55,18 +51,18 @@ public class Customer {
     @Column(name = "opis_notatki")
     private String opisNotatki;
 
+    @Column(name = "czy_odwiedzony")
+    private Boolean czyOdwiedzony;
+
+    @Column(name = "data_pozyskania")
+    private LocalDateTime dataPozyskania;
+
     @Column(name = "data_ostatniej_edycji")
-    private OffsetDateTime dataOstatniejEdycji;
-
-    @Column(name = "nawigacja")
-    private String nawigacja;
-
-    @Column(name = "strona_www")
-    private String stronaWww;
-
-    @Column(name = "grupa_cenowa")
-    private Integer grupaCenowa;
+    private LocalDateTime dataOstatniejEdycji;
 
     @Column(name = "ostatnia_wizyta")
-    private OffsetDateTime ostatniaWizyta;
+    private LocalDateTime ostatniaWizyta;
+
+    // Dodatkowe pola, o których wspomniałeś w SELECT:
+    private String nawigacja; 
 }

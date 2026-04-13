@@ -7,14 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Service for handling customer operations
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -36,7 +32,7 @@ public class CustomerService {
 
     public CustomerDto createCustomer(CustomerDto customerDto) {
         Customer customer = toEntity(customerDto);
-        customer.setId(null); // ID jest auto-generowany przez bazę
+        customer.setId(null); 
         Customer saved = customerRepository.save(customer);
         return toDto(saved);
     }
@@ -44,20 +40,28 @@ public class CustomerService {
     public CustomerDto updateCustomer(Integer id, CustomerDto customerDto) {
         Customer existing = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
+        
         existing.setNazwaFirmy(customerDto.nazwaFirmy());
         existing.setTelefon(customerDto.telefon());
         existing.setAdres(customerDto.adres());
         existing.setRegion(customerDto.region());
         existing.setHandlowiec(customerDto.handlowiec());
-        existing.setDataPozyskania(customerDto.dataPozyskania());
+        
+        // KONWERSJA: Jeśli encja wymaga LocalDateTime, a DTO daje LocalDate
+        existing.setDataPozyskania(customerDto.dataPozyskania() != null ? customerDto.dataPozyskania().atStartOfDay() : null);
+        
         existing.setCzyOdwiedzony(customerDto.czyOdwiedzony());
         existing.setStatusWizyty(customerDto.statusWizyty());
         existing.setOpisNotatki(customerDto.opisNotatki());
-        existing.setDataOstatniejEdycji(OffsetDateTime.now());
+        
+        // Zmiana na LocalDateTime.now() zamiast OffsetDateTime
+        existing.setDataOstatniejEdycji(LocalDateTime.now());
+        
         existing.setNawigacja(customerDto.nawigacja());
         existing.setStronaWww(customerDto.stronaWww());
         existing.setGrupaCenowa(customerDto.grupaCenowa());
         existing.setOstatniaWizyta(customerDto.ostatniaWizyta());
+        
         Customer saved = customerRepository.save(existing);
         return toDto(saved);
     }
@@ -77,7 +81,8 @@ public class CustomerService {
                 customer.getAdres(),
                 customer.getRegion(),
                 customer.getHandlowiec(),
-                customer.getDataPozyskania(),
+                // Konwersja LocalDateTime z bazy na LocalDate dla DTO
+                customer.getDataPozyskania() != null ? customer.getDataPozyskania().toLocalDate() : null,
                 customer.getCzyOdwiedzony(),
                 customer.getStatusWizyty(),
                 customer.getOpisNotatki(),
@@ -97,7 +102,8 @@ public class CustomerService {
                 .adres(dto.adres())
                 .region(dto.region())
                 .handlowiec(dto.handlowiec())
-                .dataPozyskania(dto.dataPozyskania())
+                // Konwersja LocalDate na LocalDateTime dla encji
+                .dataPozyskania(dto.dataPozyskania() != null ? dto.dataPozyskania().atStartOfDay() : null)
                 .czyOdwiedzony(dto.czyOdwiedzony())
                 .statusWizyty(dto.statusWizyty())
                 .opisNotatki(dto.opisNotatki())
