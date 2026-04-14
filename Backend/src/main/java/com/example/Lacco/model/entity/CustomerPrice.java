@@ -9,7 +9,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "customer_prices")
+@Table(name = "ceny_klientow")
 @Getter
 @Setter
 public class CustomerPrice {

@@ -3,21 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import './AdminNavbar.scss';
 import iconLogo from '../../assets/icon.png';
 
-/**
- * Admin Navbar component
- * Navigation bar for admin dashboard with hamburger menu for mobile
- */
 const AdminNavbar = ({ onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const navItems = [
     { path: '/admin/dashboard', label: 'Strona główna', icon: '🏠' },
@@ -31,7 +22,7 @@ const AdminNavbar = ({ onLogout }) => {
   return (
     <nav className="admin-navbar">
       <div className="navbar-container">
-        {/* LOGO SEKCOJA */}
+        {/* LOGO */}
         <div className="navbar-brand">
           <img src={iconLogo} alt="Lacco" className="brand-logo" />
           <span className="brand-text">Lacco</span>
@@ -51,27 +42,20 @@ const AdminNavbar = ({ onLogout }) => {
           ))}
         </div>
 
-        {/* PRZYCISK WYLOGOWANIA */}
+        {/* AKCJE (WYLOGUJ) */}
         <div className="navbar-actions">
           <button
-            className="logout-btn"
+            className="logout-btn tooltip-wrapper"
             onClick={onLogout}
-            title="Wyloguj się"
           >
             <span className="logout-icon">🚪</span>
-           <div className="logout-container">
-  <span className="tooltip-text">Wyloguj się</span>
-</div>
+            <span className="tooltip-text">Wyloguj się</span>
           </button>
         </div>
 
         {/* HAMBURGER (MOBILE) */}
         <div className="mobile-menu-toggle">
-          <button
-            className="hamburger-btn"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-          >
+          <button className="hamburger-btn" onClick={toggleMobileMenu}>
             <span className="hamburger-line"></span>
             <span className="hamburger-line"></span>
             <span className="hamburger-line"></span>
@@ -95,10 +79,7 @@ const AdminNavbar = ({ onLogout }) => {
           ))}
           <button
             className="mobile-logout-btn"
-            onClick={() => {
-              closeMobileMenu();
-              onLogout();
-            }}
+            onClick={() => { closeMobileMenu(); onLogout(); }}
           >
             🚪 Wyloguj się
           </button>

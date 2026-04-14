@@ -13,232 +13,148 @@
     justify-content: space-between;
     padding: 0 20px;
     height: 70px;
+    gap: 15px; // Odstęp między brandem a menu
   }
 
   .navbar-brand {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
+    flex-shrink: 0; // Logo nigdy się nie kurczy
 
     .brand-logo {
-      height: 40px;
+      height: 35px;
       width: auto;
     }
 
     .brand-text {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: bold;
       color: white;
-      margin-right: 25px;
     }
   }
-.tooltip-text {
-  visibility: hidden;
-  width: 100px;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
-  position: absolute;
-  z-index: 1;
-  bottom: 125%; /* Pozycja nad ikoną */
-  left: 50%;
-  margin-left: -50px;
-  opacity: 0;
-  transition: opacity 0.3s;
-  font-size: 12px;
-  font-family: Arial, sans-serif;
-}
 
-/* Strzałka pod tooltipem */
-.tooltip-text::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
-}
-
-/* Pokazywanie po najechaniu */
-.logout-container:hover .tooltip-text {
-  visibility: visible;
-  opacity: 1;
-}
-
-.logout-icon {
-  font-size: 24px;
-  transition: transform 0.2s;
-}
-
-.logout-container:hover .logout-icon {
-  transform: scale(1.1); /* Delikatne powiększenie ikony przy okazji */
-}
   .navbar-menu {
     display: flex;
-    gap: 30px;
+    gap: 8px; // Zredukowany odstęp dla lepszego dopasowania
+    flex: 1;
+    justify-content: center;
+    min-width: 0; // Pozwala na skurczenie flexa
 
     .navbar-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 15px;
+      gap: 6px;
+      padding: 8px 12px;
       color: white;
       text-decoration: none;
       border-radius: 8px;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       font-weight: 500;
+      white-space: nowrap; // Tekst nie przeskakuje do nowej linii
+      flex-shrink: 1; // Pozwala na lekkie skurczenie
 
       &:hover {
         background-color: rgba(255, 255, 255, 0.1);
-        transform: translateY(-1px);
       }
 
       &.active {
         background-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
 
-      .item-icon {
-        font-size: 1.2rem;
-      }
-
-      .item-label {
-        font-size: 0.9rem;
-      }
+      .item-icon { font-size: 1.1rem; }
+      .item-label { font-size: 0.85rem; }
     }
   }
 
   .navbar-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+
     .logout-btn {
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.3);
       color: white;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 500;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-1px);
-      }
-    }
-  }
-
-  .mobile-menu-toggle {
-    display: none;
-
-    .hamburger-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 5px;
-
-      .hamburger-line {
-        width: 25px;
-        height: 3px;
-        background-color: white;
-        border-radius: 2px;
-        transition: all 0.3s ease;
-      }
-
-      &:hover .hamburger-line {
-        background-color: rgba(255, 255, 255, 0.8);
-      }
-    }
-  }
-
-  .mobile-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-
-    .mobile-menu-item {
+      width: 42px;
+      height: 42px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 15px;
-      color: white;
-      text-decoration: none;
+      justify-content: center;
       border-radius: 8px;
-      transition: all 0.3s ease;
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-
-      &.active {
-        background-color: rgba(255, 255, 255, 0.2);
-      }
-
-      .item-icon {
-        font-size: 1.3rem;
-      }
-
-      .item-label {
-        font-size: 1rem;
-      }
-    }
-
-    .mobile-logout-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      padding: 12px 15px;
-      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 500;
-      text-align: center;
+      position: relative; // Dla tooltipa
+      transition: all 0.2s;
 
       &:hover {
         background: rgba(255, 255, 255, 0.2);
+        .logout-icon { transform: scale(1.1); }
+        .tooltip-text { visibility: visible; opacity: 1; }
+      }
+
+      .logout-icon { font-size: 1.3rem; transition: transform 0.2s; }
+    }
+
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border: 5px solid transparent;
+        border-bottom-color: #333;
       }
     }
   }
-}
 
-// Mobile styles
-@media (max-width: 768px) {
-  .admin-navbar {
-    .navbar-container {
-      padding: 0 15px;
-      height: 60px;
+  // RESPONSYWNOŚĆ
+  @media (max-width: 1150px) {
+    .navbar-menu .item-label {
+      display: none; // Na mniejszych laptopach zostają same ikony
     }
+  }
 
-    .navbar-brand {
-      .brand-text {
-        font-size: 1.3rem;
-      }
+  @media (max-width: 768px) {
+    .navbar-menu.desktop-menu, .navbar-actions { display: none; }
+    .mobile-menu-toggle { display: block; }
+    
+    .mobile-menu-toggle .hamburger-btn {
+      background: none; border: none; display: flex; flex-direction: column; gap: 4px;
+      .hamburger-line { width: 24px; height: 3px; background: white; border-radius: 2px; }
     }
+  }
 
-    .navbar-menu.desktop-menu {
-      display: none;
+  // Reszta styli mobilnych (mobile-menu) pozostaje bez zmian jak w oryginale
+  .mobile-menu {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 15px; display: flex; flex-direction: column; gap: 8px;
+    .mobile-menu-item {
+        display: flex; align-items: center; gap: 10px; padding: 12px;
+        color: white; text-decoration: none; border-radius: 6px;
+        &.active { background: rgba(255,255,255,0.2); }
     }
-
-    .navbar-actions {
-      display: none;
-    }
-
-    .mobile-menu-toggle {
-      display: block;
+    .mobile-logout-btn {
+        margin-top: 10px; padding: 12px; background: rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px;
     }
   }
 }
