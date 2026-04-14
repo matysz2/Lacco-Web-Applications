@@ -48,6 +48,9 @@ desktop.ini
 *.bak
 *.tmp
 
+# --- SECRETS ---
+.env
+
 # --- DATABASE & CSV ---
 # Odkomentuj poniższą linię, jeśli plik schema.csv ma być TYLKO lokalnie
 # Supabase Snippet Public Schema Column List.csv
