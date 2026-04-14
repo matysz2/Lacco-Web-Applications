@@ -15,6 +15,11 @@ import java.util.UUID;
  * OrderItem entity representing an item in an order
  * Maps to 'pozycje_zamowienia' table in the database
  */
+
+/**
+ * OrderItem entity representing an item in an order
+ * Maps to 'pozycje_zamowienia' table in the database
+ */
 @Entity
 @Table(name = "pozycje_zamowienia")
 @Getter
@@ -32,6 +37,10 @@ public class OrderItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "zamowienie_id")
     private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "produkt_id", insertable = false, updatable = false)
+    private Product produkt;
 
     @Column(name = "produkt_id")
     private UUID produktId;
@@ -56,4 +65,19 @@ public class OrderItem {
 
     @Column(name = "kolor_id")
     private Integer kolorId;
+
+    /**
+     * Pobiera kod bezpośrednio z powiązanej encji Produkt.
+     * Zapobiega NullPointerException przy braku powiązania.
+     */
+    public String getKodProduktu() {
+        return (produkt != null) ? produkt.getKodProduktu() : "BRAK KODU";
+    }
+
+    /**
+     * Zwraca nazwę produktu z momentu złożenia zamówienia.
+     */
+    public String getNazwaProduktu() {
+        return this.nazwa;
+    }
 }

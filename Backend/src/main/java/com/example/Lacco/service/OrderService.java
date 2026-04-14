@@ -6,6 +6,7 @@ import com.example.Lacco.model.entity.*;
 import com.example.Lacco.repository.CustomerRepository;
 import com.example.Lacco.repository.OrderItemRepository;
 import com.example.Lacco.repository.OrderRepository;
+import com.example.Lacco.repository.ProductRepository;
 import com.example.Lacco.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +21,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Service do obsługi zamówień i statystyk dashboardu.
- * Zaktualizowano logowanie i odporność na brak uprawnień/danych.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -33,7 +30,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
     private final ProfileRepository profileRepository;
-
+    private final ProductRepository productRepository; // Dodany do pobierania nazwy produktu
     public List<OrderDto> getAllOrders() {
         return orderRepository.findAll().stream()
                 .map(this::toDto)
@@ -48,10 +45,8 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
-        Integer numerZamowienia = orderDto.numerZamowienia();
-        if (numerZamowienia == null) {
-            numerZamowienia = getNextOrderNumber();
-        }
+        Integer numerZamowienia = orderDto.numerZamowienia() == null ? 
+                                 getNextOrderNumber() : orderDto.numerZamowienia();
 
         Order order = Order.builder()
                 .numerZamowienia(numerZamowienia)
@@ -62,6 +57,7 @@ public class OrderService {
                 .createdAt(OffsetDateTime.now())
                 .handlowiecId(orderDto.handlowiecId())
                 .sumaNetto(orderDto.sumaNetto())
+                .orderItems(new java.util.ArrayList<>())
                 .build();
 
         if (orderDto.orderItems() != null) {
@@ -136,34 +132,62 @@ public class OrderService {
 
         return stats;
     }
+public Map<String, Object> getTraderDashboardStats(UUID handlowiecId) {
+    log.info("Pobieranie statystyk handlowca: {}", handlowiecId);
+    
+    YearMonth currentMonth = YearMonth.now();
+    OffsetDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
+    OffsetDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59).atOffset(OffsetDateTime.now().getOffset());
 
-    /**
-     * Zaktualizowana metoda statystyk handlowca.
-     * Dodano logowanie DEBUG dla weryfikacji danych bez Security.
-     */
-    public Map<String, Object> getTraderDashboardStats(UUID handlowiecId) {
-        log.info("!!! POBIERANIE STATYSTYK DLA HANDLOWCA: {} !!!", handlowiecId);
+    BigDecimal totalSales = orderRepository.getTotalSalesForTrader(handlowiecId);
+    BigDecimal monthlySales = orderRepository.getMonthlySalesForTrader(handlowiecId, startOfMonth, endOfMonth);
+
+    List<Object[]> topClientData = orderRepository.getTopClientForTrader(handlowiecId);
+    List<Object[]> topProductData = orderRepository.getTopProductForTrader(handlowiecId);
+
+    Map<String, Object> stats = new java.util.HashMap<>();
+    stats.put("totalSales", totalSales != null ? totalSales : BigDecimal.ZERO);
+    stats.put("monthlySales", monthlySales != null ? monthlySales : BigDecimal.ZERO);
+    
+    // Obsługa Klienta - bierzesz gotowy wynik [Nazwa, Suma]
+    stats.put("topClient", (topClientData == null || topClientData.isEmpty()) ? null : topClientData.get(0));
+
+    // Obsługa Produktu - TUTAJ BYŁ BŁĄD CASTOWANIA
+    if (topProductData != null && !topProductData.isEmpty()) {
+        // W row[0] masz już String (nazwę), a w row[1] masz Double/BigDecimal (ilość)
+        // Po prostu przekazujemy gotowy wiersz do Mapy
+        stats.put("topProduct", topProductData.get(0));
+    } else {
+        stats.put("topProduct", null);
+    }
+
+    return stats;
+}
+    public List<OrderDto> getOrdersByTraderWithDetails(UUID handlowiecId) {
+        List<Object[]> results = orderRepository.findOrdersWithCustomerName(handlowiecId);
         
-        YearMonth currentMonth = YearMonth.now();
-        OffsetDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
-        OffsetDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59).atOffset(OffsetDateTime.now().getOffset());
+        return results.stream().map(result -> {
+            Order order = (Order) result[0];
+            String nazwaFirmy = (String) result[1];
+            
+            List<OrderItemDto> items = order.getOrderItems().stream()
+                    .map(this::toOrderItemDto)
+                    .collect(Collectors.toList());
 
-        BigDecimal totalSales = orderRepository.getTotalSalesForTrader(handlowiecId);
-        BigDecimal monthlySales = orderRepository.getMonthlySalesForTrader(handlowiecId, startOfMonth, endOfMonth);
-
-        List<Object[]> topClient = orderRepository.getTopClientForTrader(handlowiecId);
-        List<Object[]> topProduct = orderRepository.getTopProductForTrader(handlowiecId);
-
-        Map<String, Object> stats = new java.util.HashMap<>();
-        stats.put("totalSales", totalSales != null ? totalSales : BigDecimal.ZERO);
-        stats.put("monthlySales", monthlySales != null ? monthlySales : BigDecimal.ZERO);
-        
-        // Bezpieczne sprawdzanie list (zapobiega p1_0 index errors)
-        stats.put("topClient", (topClient == null || topClient.isEmpty()) ? null : topClient.get(0));
-        stats.put("topProduct", (topProduct == null || topProduct.isEmpty()) ? null : topProduct.get(0));
-
-        log.info("Statystyki obliczone pomyślnie dla handlowca {}", handlowiecId);
-        return stats;
+            return new OrderDto(
+                    order.getId(),
+                    order.getNumerZamowienia(),
+                    order.getKlientId(),
+                    order.getStatus(),
+                    order.getSumaBrutto(),
+                    order.getUwagi(),
+                    order.getCreatedAt(),
+                    order.getHandlowiecId(),
+                    order.getSumaNetto(),
+                    items,
+                    nazwaFirmy != null ? nazwaFirmy : "Brak nazwy"
+            );
+        }).collect(Collectors.toList());
     }
 
     private OrderDto toDto(Order order) {
@@ -181,27 +205,21 @@ public class OrderService {
                 order.getCreatedAt(),
                 order.getHandlowiecId(),
                 order.getSumaNetto(),
-                items
+                items,
+                null
         );
     }
 
     private OrderItemDto toOrderItemDto(OrderItem item) {
         return new OrderItemDto(
                 item.getId(),
-                item.getProduktId(),
+                item.getKodProduktu(),      // Metoda z encji OrderItem
+                item.getNazwaProduktu(),    // Metoda z encji OrderItem
                 item.getIlosc(),
-                item.getCenaZastosowana(),
-                item.getCreatedAt(),
-                item.getWartoscNetto(),
-                item.getNazwa(),
                 item.getOpakowanie(),
-                item.getKolorId()
+                item.getCenaZastosowana(),
+                item.getWartoscNetto()
         );
-    }
-
-    private Integer getNextOrderNumber() {
-        Integer maxNumber = orderRepository.findMaxOrderNumber();
-        return (maxNumber != null ? maxNumber : 0) + 1;
     }
 
     private OrderItem toOrderItemEntity(OrderItemDto dto, Order order) {
@@ -212,9 +230,15 @@ public class OrderService {
                 .cenaZastosowana(dto.cenaZastosowana())
                 .createdAt(dto.createdAt() != null ? dto.createdAt() : OffsetDateTime.now())
                 .wartoscNetto(dto.wartoscNetto())
-                .nazwa(dto.nazwa())
+                .nazwa(dto.nazwaProduktu()) // Mapowanie z DTO do Entity
                 .opakowanie(dto.opakowanie())
                 .kolorId(dto.kolorId())
                 .build();
     }
+
+    private Integer getNextOrderNumber() {
+        Integer maxNumber = orderRepository.findMaxOrderNumber();
+        return (maxNumber != null ? maxNumber : 0) + 1;
+    }
+    
 }

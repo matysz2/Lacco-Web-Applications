@@ -1,66 +1,419 @@
+// Zmienne
 $primary: #2c3e50;
 $accent: #3498db;
 $success: #27ae60;
+$danger: #e74c3c;
+$border-color: #e0e0e0;
+$bg-light: #f8f9fa;
+$text-muted: #7f8c8d;
+
+// Mixin dla spójności siatki (6 kolumn)
+@mixin order-grid-layout {
+  display: grid;
+  // Proporcje: Data(160px), Nr(90px), Klient(auto), Netto(100px), Brutto(100px), Status(130px)
+  grid-template-columns: 160px 90px 1fr 100px 100px 130px;
+  gap: 15px;
+  align-items: center;
+}
 
 .sales-container {
-  padding: 30px;
+  padding: 20px;
+  max-width: 1300px; 
+  margin: 0 auto;
+  background: $bg-light;
+  min-height: 100vh;
 
   .sales-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 25px;
-    h1 { color: $primary; }
+    align-items: center;
+    margin-bottom: 30px;
+
+    h1 {
+      font-size: 1.8rem;
+      color: $primary;
+      margin: 0;
+    }
+
+    .btn-primary {
+      background-color: $accent;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+
+      &:hover {
+        background-color: darken($accent, 10%);
+      }
+    }
   }
 
   .table-header {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
-    padding: 15px;
-    background: $primary;
-    color: white;
-    border-radius: 8px 8px 0 0;
-    font-weight: 600;
+    @include order-grid-layout;
+    padding: 10px 15px;
+    font-weight: bold;
+    color: $text-muted;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
   }
 
-  .order-item {
-    border: 1px solid #eee;
-    margin-bottom: 5px;
+  .order-row-group {
+    background: white;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid $border-color;
+    transition: all 0.3s ease;
 
-    .order-main {
-      display: grid;
-      grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
-      padding: 15px;
-      cursor: pointer;
-      align-items: center;
-      &:hover { background: #f9f9f9; }
+    &.is-expanded {
+      border-color: $accent;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      margin: 15px 0;
+    }
+  }
 
-      .order-num { font-weight: 700; color: $accent; }
-      .status { 
-        font-weight: bold;
-        &.nowe { color: $accent; }
-        &.zrealizowane { color: $success; }
-      }
+  .order-main-row {
+    @include order-grid-layout;
+    padding: 18px 15px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f1f9ff;
     }
 
-    .order-details {
-      padding: 20px;
-      background: #fcfcfc;
-      border-top: 2px solid $accent;
+    .order-date {
+      font-size: 0.85rem;
+      color: $text-muted;
+      font-family: 'Roboto Mono', monospace;
+    }
 
-      .items-table {
-        width: 100%;
-        border-collapse: collapse;
-        th { text-align: left; color: #95a5a6; font-size: 0.8rem; }
-        td { padding: 10px 0; border-bottom: 1px solid #eee; }
+    .order-num {
+      font-weight: bold;
+      color: $accent;
+    }
+
+    .client-name {
+      color: $primary;
+      font-weight: 500;
+    }
+
+    .price-cell {
+      font-family: 'Roboto Mono', monospace;
+      text-align: right;
+      padding-right: 10px;
+    }
+
+    .status-container {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .status-pill {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      width: 110px;
+      text-align: center;
+
+      &.new { background: #e3f2fd; color: #1976d2; }
+      &.in_progress { background: #fff3cd; color: #856404; }
+      &.completed { background: #d4edda; color: #155724; }
+      &.cancelled { background: #f8d7da; color: #721c24; }
+    }
+  }
+
+  .order-details-expanded {
+    padding: 20px;
+    background: #fcfcfc;
+    border-top: 1px solid #f0f0f0;
+
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 15px;
+      color: $primary;
+      border-left: 4px solid $accent;
+      padding-left: 10px;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th {
+        text-align: left;
+        padding: 12px;
+        background: #f1f1f1;
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 0.95rem;
+
+        code {
+          background: #f0f0f0;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          color: $danger;
+        }
+
+        &.no-data {
+          text-align: center;
+          padding: 30px;
+          color: #999;
+          font-style: italic;
+        }
       }
     }
   }
 }
 
-@media (max-width: 768px) {
-  .table-header { display: none; }
-  .order-main {
+/* Style dla Modala i Formularza Nowego Zamówienia */
+.order-form-sales {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px 5px;
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    label {
+      font-weight: 600;
+      color: $primary;
+      font-size: 0.9rem;
+    }
+
+    select, input, textarea {
+      padding: 12px;
+      border: 1px solid $border-color;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: $accent;
+      }
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+  }
+
+  .items-builder-box {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px dashed darken($border-color, 15%);
+
+    h4 {
+      margin: 0 0 15px 0;
+      color: $primary;
+      font-size: 1rem;
+    }
+
+    .builder-form-vertical {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      .product-select-row select {
+        width: 100%;
+      }
+
+      .quantity-action-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 2fr;
+        gap: 15px;
+        align-items: flex-end;
+
+        .input-with-label {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          label { font-size: 0.8rem; font-weight: bold; color: #666; }
+        }
+
+        .price-preview-box {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          .label { font-size: 0.8rem; font-weight: bold; color: #666; }
+          .value { 
+            height: 44px; 
+            display: flex; 
+            align-items: center; 
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 600;
+            color: $success;
+            font-size: 1.1rem;
+          }
+        }
+
+        .btn-add-large {
+          height: 44px;
+          background: $primary;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: transform 0.1s, background 0.2s;
+
+          &:hover {
+            background: lighten($primary, 10%);
+            transform: translateY(-1px);
+          }
+        }
+      }
+    }
+  }
+
+  .added-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid $border-color;
+
+    .added-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: 1px solid #eee;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+
+      .item-main {
+        display: flex;
+        flex-direction: column;
+        strong { font-size: 0.9rem; color: $primary; }
+        small { font-size: 0.8rem; color: #7f8c8d; }
+      }
+
+      .item-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        span { font-family: 'Roboto Mono', monospace; font-weight: bold; }
+        button {
+          background: transparent;
+          color: $danger;
+          border: 1px solid #fadbd8;
+          border-radius: 4px;
+          padding: 4px 8px;
+          cursor: pointer;
+          font-size: 0.75rem;
+          &:hover { background: $danger; color: white; }
+        }
+      }
+    }
+  }
+
+  .order-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: darken($primary, 5%);
+    color: white;
+    border-radius: 8px;
+    
+    div {
+      font-size: 0.95rem;
+      strong { font-size: 1.2rem; color: #fff; margin-left: 5px; }
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 10px;
+
+    button {
+      padding: 12px 25px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-confirm {
+      background: $success;
+      color: white;
+      &:hover { background: darken($success, 5%); }
+      &:disabled { background: #ccc; cursor: not-allowed; }
+    }
+
+    .btn-cancel {
+      background: #bdc3c7;
+      color: white;
+      &:hover { background: darken(#bdc3c7, 10%); }
+    }
+  }
+}
+
+/* Loader i Globalne ustawienia Modala */
+.loader {
+  text-align: center;
+  padding: 50px;
+  color: $primary;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+:global(.modal-content) {
+  max-width: 850px !important;
+  width: 95% !important;
+}
+
+/* Responsywność */
+@media (max-width: 1100px) {
+  .sales-container .table-header {
+    display: none;
+  }
+
+  .sales-container .order-main-row {
     grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    .client-name {
+      grid-column: span 2;
+      font-size: 1.1rem;
+    }
+
+    .status-container {
+      grid-column: span 2;
+      justify-content: flex-start;
+      margin-top: 5px;
+    }
+  }
+
+  .order-form-sales .items-builder-box .builder-form-vertical .quantity-action-row {
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 }

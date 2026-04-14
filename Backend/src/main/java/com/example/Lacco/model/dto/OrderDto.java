@@ -18,5 +18,6 @@ public record OrderDto(
     OffsetDateTime createdAt,
     UUID handlowiecId,
     BigDecimal sumaNetto,
-    List<OrderItemDto> orderItems
+    List<OrderItemDto> orderItems,
+    String nazwaFirmy // <--- To pole pozwoli wyświetlić stolarza w tabeli
 ) {}

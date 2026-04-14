@@ -130,4 +130,40 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/trader/my-orders")
+    public ResponseEntity<List<OrderDto>> getMyOrders(@RequestParam(required = false) String traderId) {
+        log.info("Request for trader orders. Param traderId: {}", traderId);
+        
+        try {
+            UUID finalTraderId = resolveTraderId(traderId);
+            log.info("Fetching orders for finalTraderId: {}", finalTraderId);
+            
+            // Wywołujemy nową metodę w serwisie (tę z JOINem do leadów)
+            List<OrderDto> orders = orderService.getOrdersByTraderWithDetails(finalTraderId);
+            return ResponseEntity.ok(orders);
+            
+        } catch (RuntimeException e) {
+            log.warn("Unauthorized or Profile not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            log.error("Error fetching trader orders: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Pomocnicza metoda do wyciągania ID (identyczna jak w statystykach dla spójności)
+    private UUID resolveTraderId(String traderId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (traderId != null && !traderId.trim().isEmpty()) {
+            return UUID.fromString(traderId);
+        } else if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            String email = auth.getName();
+            return profileRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Profile not found for: " + email))
+                    .getId();
+        }
+        throw new RuntimeException("Could not resolve Trader ID");
+    }
 }

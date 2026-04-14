@@ -50,7 +50,20 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
            "WHERE o.handlowiecId = :handlowiecId GROUP BY o.klientId, c.nazwaFirmy ORDER BY SUM(o.sumaNetto) DESC")
     List<Object[]> getTopClientForTrader(@Param("handlowiecId") UUID handlowiecId);
 
-    @Query("SELECT oi.produktId, SUM(oi.ilosc) FROM OrderItem oi JOIN oi.order o " +
-           "WHERE o.handlowiecId = :handlowiecId GROUP BY oi.produktId ORDER BY SUM(oi.ilosc) DESC")
-    List<Object[]> getTopProductForTrader(@Param("handlowiecId") UUID handlowiecId);
+ // W OrderRepository.java
+@Query("SELECT p.nazwa, SUM(oi.ilosc) FROM OrderItem oi " +
+       "JOIN Product p ON oi.produktId = p.id " + // Zakładając, że masz relację lub ID
+       "WHERE oi.order.handlowiecId = :handlowiecId " +
+       "GROUP BY p.nazwa ORDER BY SUM(oi.ilosc) DESC")
+List<Object[]> getTopProductForTrader(@Param("handlowiecId") UUID handlowiecId);
+
+    /**
+     * Pobiera zamówienia wraz z nazwą firmy z tabeli klientów (Customer).
+     * Zwraca listę tablic obiektów, gdzie index [0] to encja Order, a [1] to String nazwaFirmy.
+     */
+  @Query("SELECT o, l.nazwaFirmy FROM Order o " +
+       "LEFT JOIN LeadStolarz l ON o.klientId = l.id " +
+       "WHERE o.handlowiecId = :handlowiecId " +
+       "ORDER BY o.createdAt DESC")
+List<Object[]> findOrdersWithCustomerName(@Param("handlowiecId") UUID handlowiecId);
 }
