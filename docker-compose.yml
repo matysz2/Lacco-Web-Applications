@@ -13,7 +13,6 @@ services:
       - db_data:/var/lib/postgresql/data
 
   backend:
-    # ZMIANA: Używamy obrazu z JDK (kompilatorem), aby móc uruchamiać kod na żywo
     image: maven:3.9-eclipse-temurin-21 
     container_name: lacco-backend
     working_dir: /app
@@ -26,7 +25,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=lacco_password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    # ZMIANA: Nadpisujemy "entrypoint", aby Docker nie szukał app.jar z Twojego Dockerfile
+      - JWT_SECRET=Ym0yZ2p6N3I5eHdubm00cW9waGtyc3R1dnd4eXphYmNkZWZnaGk0bTVuNnA3cThzOXR1dg== # <--- DODAJ TO
     entrypoint: 
       - /bin/sh
       - -c
