@@ -18,16 +18,16 @@ public class CustomerPrice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "customer_id", nullable = false)
+    @Column(name = "klient_id", nullable = false)
     private Long customerId;
 
-    @Column(name = "product_id", nullable = false)
+    @Column(name = "produkt_id", nullable = false)
     private UUID productId;
 
-    @Column(name = "special_price", nullable = false, precision = 10, scale = 2)
+    @Column(name = "cena_specjalna", nullable = false, precision = 10, scale = 2)
     private BigDecimal specialPrice;
 
-    @Column(name = "color_id")
+    @Column(name = "kolor_id")
     private Integer colorId;
 
     @CreationTimestamp

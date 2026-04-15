@@ -50,6 +50,7 @@ desktop.ini
 
 # --- SECRETS ---
 .env
+src/main/resources/application.properties
 
 # --- DATABASE & CSV ---
 # Odkomentuj poniższą linię, jeśli plik schema.csv ma być TYLKO lokalnie

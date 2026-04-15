@@ -1,17 +1,4 @@
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: lacco-postgres
-    restart: always
-    environment:
-      - POSTGRES_DB=lacco_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=lacco_password
-    ports:
-      - "5433:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
   backend:
     image: maven:3.9-eclipse-temurin-21 
     container_name: lacco-backend
@@ -21,11 +8,12 @@ services:
     volumes:
       - ./Backend:/app
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/lacco_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=lacco_password
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
+      - SPRING_DATASOURCE_USERNAME=postgres.xsojbzwydgdjtaabgygd
+      - SPRING_DATASOURCE_PASSWORD=Wiktor@180918
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - JWT_SECRET=Ym0yZ2p6N3I5eHdubm00cW9waGtyc3R1dnd4eXphYmNkZWZnaGk0bTVuNnA3cThzOXR1dg== # <--- DODAJ TO
+      - JWT_SECRET=Ym0yZ2p6N3I5eHdubm00cW9waGtyc3R1dnd4eXphYmNkZWZnaGk0bTVuNnA3cThzOXR1dg==
+      - MAIL_PASSWORD=nlewtdknlexaatjh
     entrypoint: 
       - /bin/sh
       - -c
@@ -36,8 +24,6 @@ services:
           memory: 1g
         reservations:
           memory: 512m
-    depends_on:
-      - db
 
   frontend:
     build: ./Frontend
@@ -55,5 +41,3 @@ services:
     depends_on:
       - backend
 
-volumes:
-  db_data:

@@ -65,7 +65,6 @@ const ProductsPage = () => {
         <table className="inventory-table">
           <thead>
             <tr>
-              <th>Kod</th>
               <th>Nazwa</th>
               <th>Grupa</th>
               <th>Opakowanie</th>
@@ -81,7 +80,6 @@ const ProductsPage = () => {
               const isLowStock = p.ilosc <= p.stanMinimalny;
               return (
                 <tr key={p.id} className={isLowStock ? 'low-stock-row' : ''}>
-                  <td data-label="Kod" className="code">{p.kodProduktu}</td>
                   <td data-label="Nazwa" className="name">{p.nazwa}</td>
                   <td data-label="Grupa">{p.grupa}</td>
                   <td data-label="Opakowanie">{p.opakowanie}</td>

@@ -9,125 +9,107 @@ $green-success: #27ae60;
 $border-color: #e0e6ed;
 
 .products-container {
-  padding: 30px;
+  padding: 10px 15px;
   background-color: $bg-body;
   min-height: 100vh;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 100%;
+  box-sizing: border-box;
 
   .inventory-header {
+    margin-bottom: 15px;
     display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-bottom: 30px;
+    justify-content: space-between;
+    align-items: flex-end;
 
     .title-section {
       h1 {
         margin: 0;
         color: $text-main;
-        font-size: 1.8rem;
+        font-size: 1.3rem;
         font-weight: 700;
       }
       .product-count {
         color: $text-muted;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
       }
     }
+  }
 
-    .search-wrapper {
+  .search-bar-container {
+    position: relative;
+    max-width: 500px;
+    margin-bottom: 15px;
+
+    .modern-search {
       width: 100%;
+      padding: 8px 12px 8px 35px;
+      font-size: 0.9rem;
+      border: 1px solid $border-color;
+      border-radius: 6px;
+      background: $white;
+    }
 
-      .search-bar-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-        max-width: 800px; // Szerokie i czytelne pole
-
-        .search-icon {
-          position: absolute;
-          left: 15px;
-          color: $text-muted;
-          font-style: normal;
-        }
-
-        .modern-search {
-          width: 100%;
-          padding: 14px 14px 14px 45px;
-          font-size: 1rem;
-          border: 2px solid $border-color;
-          border-radius: 12px;
-          background: $white;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-          transition: all 0.3s ease;
-
-          &:focus {
-            outline: none;
-            border-color: $blue-primary;
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
-          }
-        }
-
-        .clear-search {
-          position: absolute;
-          right: 15px;
-          background: none;
-          border: none;
-          color: $text-muted;
-          cursor: pointer;
-          font-size: 1.1rem;
-          &:hover { color: $red-danger; }
-        }
-      }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+      color: $text-muted;
     }
   }
 
   .table-responsive {
     background: $white;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     border: 1px solid $border-color;
+    width: 100%;
+    overflow: hidden;
   }
 
   .inventory-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1000px;
+    table-layout: fixed;
 
-    thead {
-      tr {
-        background-color: #fcfcfd;
-      }
+    thead tr {
+      background-color: #fcfcfd;
     }
 
     th {
-      padding: 18px 15px;
+      padding: 10px 6px;
       text-align: left;
-      font-size: 0.85rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
       color: $text-muted;
       border-bottom: 2px solid $border-color;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     td {
-      padding: 16px 15px;
+      padding: 8px 6px;
       border-bottom: 1px solid #f1f1f1;
       color: $text-main;
-      font-size: 0.95rem;
+      font-size: 0.8rem;
       vertical-align: middle;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    tr:last-child td { border-bottom: none; }
-    
-    tr:hover { background-color: rgba(52, 152, 219, 0.02); }
+    // Nowe proporcje po usunięciu kolumny Kod (Suma 100%)
+    th:nth-child(1) { width: 32%; } // Nazwa (zwiększona o usunięty kod)
+    th:nth-child(2) { width: 14%; } // Grupa
+    th:nth-child(3) { width: 10%; } // Opakowanie
+    th:nth-child(4) { width: 5%; }  // JM
+    th:nth-child(5) { width: 7%; }  // Ilość
+    th:nth-child(6) { width: 10%; } // Cena A
+    th:nth-child(7) { width: 11%; } // Cena B
+    th:nth-child(8) { width: 11%; } // Cena C
 
-    // Style dla konkretnych kolumn
-    .code {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 500;
-      color: #5d6d7e;
-    }
+    tr:hover { background-color: #f8fbff; }
 
     .name {
       font-weight: 600;
@@ -136,22 +118,19 @@ $border-color: #e0e6ed;
 
     .unit-tag {
       background: #f0f3f5;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 500;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.7rem;
     }
 
     .stock-bold {
       font-weight: 800;
-      font-size: 1rem;
-      
       &.success { color: $green-success; }
       &.warning { 
         color: $red-danger; 
-        background: rgba(231, 76, 60, 0.1);
-        padding: 4px 8px;
-        border-radius: 4px;
+        background: rgba(231, 76, 60, 0.05);
+        padding: 2px 4px;
+        border-radius: 3px;
       }
     }
 
@@ -161,22 +140,9 @@ $border-color: #e0e6ed;
   }
 }
 
-// Obsługa braku danych / ładowania
 .loader {
   text-align: center;
-  padding: 100px;
-  font-size: 1.2rem;
+  padding: 50px;
   color: $blue-primary;
   font-weight: 600;
-}
-
-/* RWD - Dostosowanie do mniejszych ekranów */
-@media (max-width: 1024px) {
-  .products-container {
-    padding: 15px;
-    
-    .inventory-table {
-      min-width: 100%;
-    }
-  }
 }
