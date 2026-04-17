@@ -5,7 +5,7 @@ import axios from 'axios';
  * Handles authentication tokens and error handling
  */
 const api = axios.create({
-  baseURL: 'http://lacco.pl/api',
+  baseURL: 'https://lacco.pl',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
