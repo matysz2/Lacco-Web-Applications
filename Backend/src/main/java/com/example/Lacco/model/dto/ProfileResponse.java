@@ -1,5 +1,6 @@
 package com.example.Lacco.model.dto;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -15,5 +16,6 @@ public record ProfileResponse(
     OffsetDateTime createdAt,
     Boolean isActive,
     OffsetDateTime lastLogin,
-    OffsetDateTime updatedAt
+    OffsetDateTime updatedAt,
+    BigDecimal currentMonthGoal // Dodaj to pole tutaj!
 ) {}

@@ -1,218 +1,164 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import './SalesmenPage.scss';
 
 /**
- * Salesmen Page component
- * Manages salesmen (profiles with role TRADER)
+ * SalesmenPage Component
+ * Zarządzanie zespołem handlowym.
  */
 const SalesmenPage = () => {
-  const [salesmen, setSalesmen] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingSalesman, setEditingSalesman] = useState(null);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: ''
-  });
-
-  useEffect(() => {
-    fetchSalesmen();
-  }, []);
-
-  const fetchSalesmen = async () => {
-    try {
-      const response = await api.get('/api/salesmen');
-      setSalesmen(response.data);
-    } catch (error) {
-      console.error('Error fetching salesmen:', error.response?.data || error.message || error);
-      alert(`Błąd ładowania handlowców (${error.response?.status}) - sprawdź backend`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const [salesmen, setSalesmen] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [editingSalesman, setEditingSalesman] = useState(null);
     
-    // Validate form fields
-    if (!formData.firstName || !formData.lastName || !formData.email) {
-      alert('Wszystkie pola są wymagane');
-      return;
-    }
-    
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      alert('Nieprawidłowy format emaila');
-      return;
-    }
-    
-    try {
-      if (editingSalesman) {
-        await api.put(`/api/salesmen/${editingSalesman.id}`, formData);
-      } else {
-        await api.post('/api/salesmen', {
-          ...formData,
-          role: 'TRADER'
-        });
-      }
-      fetchSalesmen();
-      setShowModal(false);
-      setEditingSalesman(null);
-      setFormData({ firstName: '', lastName: '', email: '' });
-    } catch (error) {
-      console.error('Error saving salesman:', error);
-      
-      // More detailed error messages
-      const errorMessage = error.response?.data?.error || 
-                          error.response?.data?.message ||
-                          error.message ||
-                          'Błąd podczas zapisywania handlowca';
-      
-      if (error.response?.status === 409 || errorMessage.includes('duplicate') || errorMessage.includes('already exists')) {
-        alert('Email już istnieje w systemie. Proszę użyć innego emaila.');
-      } else if (error.response?.status === 400) {
-        alert(`Błąd walidacji: ${errorMessage}`);
-      } else {
-        alert(`Błąd: ${errorMessage}`);
-      }
-    }
-  };
-
-  const handleEdit = (salesman) => {
-    setEditingSalesman(salesman);
-    setFormData({
-      firstName: salesman.firstName,
-      lastName: salesman.lastName,
-      email: salesman.email
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        currentMonthGoal: 0
     });
-    setShowModal(true);
-  };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Czy na pewno chcesz usunąć tego handlowca?')) {
-      try {
-        await api.delete(`/api/salesmen/${id}`);
+    const fetchSalesmen = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/api/salesmen');
+            setSalesmen(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Błąd pobierania:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
         fetchSalesmen();
-      } catch (error) {
-        console.error('Error deleting salesman:', error);
-        alert('Błąd podczas usuwania handlowca');
-      }
-    }
-  };
+    }, [fetchSalesmen]);
 
-  const handleAdd = () => {
-    setEditingSalesman(null);
-    setFormData({ firstName: '', lastName: '', email: '' });
-    setShowModal(true);
-  };
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: name === 'currentMonthGoal' ? parseFloat(value) || 0 : value
+        }));
+    };
 
-  const columns = [
-    { key: 'firstName', label: 'Imię', sortable: true },
-    { key: 'lastName', label: 'Nazwisko', sortable: true },
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'role', label: 'Rola', sortable: true }
-  ];
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingSalesman) {
+                await api.put(`/api/salesmen/${editingSalesman.id}`, formData);
+            } else {
+                await api.post('/api/salesmen', { ...formData, role: 'TRADER' });
+            }
+            fetchSalesmen();
+            closeModal();
+        } catch  {
+            alert('Błąd zapisu.');
+        }
+    };
 
-  const actions = [
-    {
-      label: 'Edytuj',
-      onClick: handleEdit,
-      className: 'edit-btn'
-    },
-    {
-      label: 'Usuń',
-      onClick: (item) => handleDelete(item.id),
-      className: 'delete-btn'
-    }
-  ];
+    const handleEdit = (salesman) => {
+        setEditingSalesman(salesman);
+        setFormData({
+            firstName: salesman.firstName || '',
+            lastName: salesman.lastName || '',
+            email: salesman.email || '',
+            currentMonthGoal: salesman.currentMonthGoal || 0
+        });
+        setShowModal(true);
+    };
 
-  if (loading) {
-    return <div className="loading">Ładowanie handlowców...</div>;
-  }
+    const closeModal = () => {
+        setShowModal(false);
+        setEditingSalesman(null);
+        setFormData({ firstName: '', lastName: '', email: '', currentMonthGoal: 0 });
+    };
 
-  return (
-    <div className="salesmen-page">
-      <div className="page-header">
-        <h1>Handlowcy</h1>
-        <button className="add-btn" onClick={handleAdd}>
-          ➕ Dodaj handlowca
-        </button>
-      </div>
+    // --- POPRAWIONA KONFIGURACJA KOLUMN ---
+    const columns = [
+        { 
+            key: 'fullName', // Zmieniamy klucz na wirtualny
+            label: 'Handlowiec', 
+            sortable: true,
+            // Jeśli Twoje DataTable nie wspiera render, upewnij się, że dane mają to pole.
+            // Tutaj wymuszamy wyświetlanie obu pól:
+            render: (_, item) => `${item.firstName || ''} ${item.lastName || ''}`.trim()
+        },
+        { key: 'email', label: 'E-mail', sortable: true },
+        { 
+            key: 'currentMonthGoal', 
+            label: 'Cel Bieżący', 
+            sortable: true,
+            render: (val) => val ? `${Number(val).toLocaleString()} zł` : '0 zł'
+        }
+    ];
 
-      <DataTable
-        data={salesmen}
-        columns={columns}
-        actions={actions}
-        searchable={true}
-      />
+    const actions = [
+        { label: 'Edytuj/Cel', onClick: handleEdit, className: 'edit-btn' },
+        { 
+            label: 'Usuń', 
+            onClick: async (item) => {
+                if(window.confirm(`Usunąć ${item.firstName}?`)) {
+                    await api.delete(`/api/salesmen/${item.id}`);
+                    fetchSalesmen();
+                }
+            }, 
+            className: 'delete-btn' 
+        }
+    ];
 
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title={editingSalesman ? 'Edytuj handlowca' : 'Dodaj handlowca'}
-      >
-        <form onSubmit={handleSubmit} className="salesman-form">
-          <div className="form-group">
-            <label htmlFor="firstName">Imię</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleInputChange}
-              required
+    // Mapujemy dane przed wysłaniem do tabeli, aby mieć pewność, że imię i nazwisko są dostępne pod jednym kluczem
+    const tableData = salesmen.map(s => ({
+        ...s,
+        fullName: `${s.firstName || ''} ${s.lastName || ''}`.trim()
+    }));
+
+    if (loading) return <div className="loader">Ładowanie...</div>;
+
+    return (
+        <div className="salesmen-page">
+            <header className="page-header">
+                <h1>Zarządzanie Zespołem</h1>
+                <button className="add-btn" onClick={() => setShowModal(true)}>+ Dodaj Handlowca</button>
+            </header>
+
+            <DataTable 
+                data={tableData} 
+                columns={columns} 
+                actions={actions} 
+                searchable={true} 
             />
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="lastName">Nazwisko</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <div className="form-actions">
-            <button type="button" onClick={() => setShowModal(false)}>
-              Anuluj
-            </button>
-            <button type="submit">
-              {editingSalesman ? 'Zapisz' : 'Dodaj'}
-            </button>
-          </div>
-        </form>
-      </Modal>
-    </div>
-  );
+            <Modal isOpen={showModal} onClose={closeModal} title={editingSalesman ? 'Edytuj' : 'Nowy'}>
+                <form onSubmit={handleSubmit} className="salesman-form">
+                    <div className="form-group">
+                        <label>Imię</label>
+                        <input name="firstName" value={formData.firstName} onChange={handleInputChange} required />
+                    </div>
+                    <div className="form-group">
+                        <label>Nazwisko</label>
+                        <input name="lastName" value={formData.lastName} onChange={handleInputChange} required />
+                    </div>
+                    <div className="form-group">
+                        <label>E-mail</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} required />
+                    </div>
+                    <div className="form-group">
+                        <label>Cel finansowy (PLN)</label>
+                        <input type="number" name="currentMonthGoal" value={formData.currentMonthGoal} onChange={handleInputChange} />
+                    </div>
+                    <div className="form-actions">
+                        <button type="button" onClick={closeModal}>Anuluj</button>
+                        <button type="submit" className="submit-btn">Zapisz</button>
+                    </div>
+                </form>
+            </Modal>
+        </div>
+    );
 };
+
 
 export default SalesmenPage;

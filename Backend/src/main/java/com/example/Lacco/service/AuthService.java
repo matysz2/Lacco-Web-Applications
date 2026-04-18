@@ -63,7 +63,8 @@ public class AuthService {
                     profile.getCreatedAt(),
                     profile.getIsActive(),
                     profile.getLastLogin(),
-                    profile.getUpdatedAt()
+                    profile.getUpdatedAt(),
+                    null             // currentMonthGoal is not part of Profile, set to null or calculate if needed
                 )
             );
         } catch (Exception e) {

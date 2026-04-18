@@ -87,7 +87,8 @@ public class AuthController {
                 profile.getCreatedAt(),
                 profile.getIsActive(),
                 profile.getLastLogin(),
-                profile.getUpdatedAt()
+                profile.getUpdatedAt(),
+                null // Nie przekazujemy celu sprzedażowego w tym endpointcie
             );
 
             return ResponseEntity.ok(response);
