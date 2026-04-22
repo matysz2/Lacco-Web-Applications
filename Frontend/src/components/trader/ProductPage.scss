@@ -48,6 +48,7 @@ $border-color: #e0e6ed;
       border: 1px solid $border-color;
       border-radius: 6px;
       background: $white;
+      color: $text-main; // Zmiana koloru tekstu na czarny
     }
 
     .search-icon {
@@ -145,4 +146,99 @@ $border-color: #e0e6ed;
   padding: 50px;
   color: $blue-primary;
   font-weight: 600;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 8px;
+
+  button {
+    background: #e9ecef;
+    color: $text-main;
+    border: 1px solid $border-color;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover:not(.active) {
+      background: #ced4da;
+    }
+
+    &.active {
+      background: $blue-primary;
+      color: $white;
+      border-color: $blue-primary;
+      font-weight: bold;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .inventory-table {
+    thead {
+      display: none; // Ukryj nagłówki tabeli na małych ekranach
+    }
+
+    tbody tr {
+      display: block;
+      margin-bottom: 15px;
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.02);
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 15px;
+      border-bottom: 1px solid #f8f8f8;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-transform: uppercase;
+        color: $text-muted;
+        flex-basis: 40%; // Ustal szerokość dla etykiety
+        text-align: left;
+        padding-right: 10px;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    // Ukryj niepotrzebne kolumny w widoku mobilnym
+    td[data-label="Grupa"],
+    td[data-label="Opakowanie"],
+    td[data-label="Ilość"],
+    td[data-label="Cena A"],
+    td[data-label="Cena B"] {
+      display: none;
+    }
+
+    // Dostosuj style dla wyświetlanych kolumn w widoku mobilnym
+    td[data-label="Nazwa"] {
+      .name { font-size: 1rem; color: $text-main; }
+    }
+
+    td[data-label="J.M."] {
+      .unit-tag { font-size: 0.85rem; }
+    }
+
+    td[data-label="Cena C"] {
+      font-size: 1rem;
+      font-weight: 700;
+      color: $blue-primary;
+    }
+  }
 }

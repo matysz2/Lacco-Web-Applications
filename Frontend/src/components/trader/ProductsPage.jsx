@@ -7,6 +7,10 @@ const ProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Stan paginacji
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(20); // 20 pozycji na stronę
+
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
@@ -33,6 +37,15 @@ const ProductsPage = () => {
       p.grupa?.toLowerCase().includes(s)
     );
   });
+
+  // Obliczenia dla paginacji
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   if (loading) return <div className="loader">Ładowanie magazynu...</div>;
 
@@ -76,7 +89,7 @@ const ProductsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map(p => {
+            {currentProducts.map(p => {
               const isLowStock = p.ilosc <= p.stanMinimalny;
               return (
                 <tr key={p.id} className={isLowStock ? 'low-stock-row' : ''}>
@@ -96,6 +109,21 @@ const ProductsPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Kontrolki paginacji */}
+      {filteredProducts.length > productsPerPage && (
+        <div className="pagination">
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => paginate(index + 1)}
+              className={currentPage === index + 1 ? 'active' : ''}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

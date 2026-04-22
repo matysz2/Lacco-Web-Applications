@@ -10,7 +10,12 @@ const SalesPage = () => {
   const [expandedId, setExpandedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const currentUser = JSON.parse(localStorage.getItem('user')); // lub skądkolwiek bierzesz dane usera
+  
+  // --- PAGINACJA ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  const currentUser = JSON.parse(localStorage.getItem('user'));
 
   const initialFormState = {
     klientId: '',
@@ -27,7 +32,8 @@ const SalesPage = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
-const formatDate = (dateString) => {
+
+  const formatDate = (dateString) => {
     if (!dateString) return '---';
     return new Date(dateString).toLocaleString('pl-PL', {
       day: '2-digit',
@@ -54,6 +60,18 @@ const formatDate = (dateString) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // --- LOGIKA PAGINACJI ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentOrders = orders.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    setExpandedId(null); // Zamykamy rozwinięte wiersze przy zmianie strony
+    window.scrollTo(0, 0); // Opcjonalnie powrót na górę
   };
 
   const toggleExpand = (id) => {
@@ -103,34 +121,34 @@ const formatDate = (dateString) => {
       sumaBrutto: netto * 1.23
     });
   };
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (formData.orderItems.length === 0) {
-    alert("Dodaj przynajmniej jeden produkt!");
-    return;
-  }
 
-  // Tworzymy kopię danych z dodanym ID handlowca
-  const dataToSend = {
-    ...formData,
-    handlowiecId: currentUser?.id // Tutaj wędruje brakujące UUID
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.orderItems.length === 0) {
+      alert("Dodaj przynajmniej jeden produkt!");
+      return;
+    }
+
+    const dataToSend = {
+      ...formData,
+      handlowiecId: currentUser?.id
+    };
+
+    try {
+      await api.post('/api/orders', dataToSend);
+      setShowModal(false);
+      setFormData(initialFormState);
+      fetchInitialData();
+      setCurrentPage(1); // Powrót na pierwszą stronę po dodaniu zamówienia
+    } catch (err) {
+      console.error("Błąd zapisu:", err);
+      alert("Błąd podczas zapisywania zamówienia.");
+    }
   };
-
-  try {
-    await api.post('/api/orders', dataToSend); // Wysyłamy kompletny obiekt
-    setShowModal(false);
-    setFormData(initialFormState);
-    fetchInitialData();
-  } catch (err) {
-    console.error("Błąd zapisu:", err);
-    alert("Błąd podczas zapisywania zamówienia.");
-  }
-};
 
   if (loading) return <div className="loader">Ładowanie panelu sprzedaży...</div>;
 
-return (
+  return (
     <div className="sales-container">
       <div className="sales-header">
         <h1>Panel Sprzedaży</h1>
@@ -149,27 +167,17 @@ return (
           <span>Status</span>
         </div>
 
-        {orders.map(order => (
+        {/* Używamy currentOrders zamiast orders */}
+        {currentOrders.map(order => (
           <div key={order.id} className={`order-row-group ${expandedId === order.id ? 'is-expanded' : ''}`}>
             <div className="order-main-row" onClick={() => toggleExpand(order.id)}>
-              {/* Kolumna 1: Data */}
               <span className="order-date">{formatDate(order.createdAt)}</span>
-              
-              {/* Kolumna 2: Numer */}
               <span className="order-num">#{order.numerZamowienia}</span>
-              
-              {/* Kolumna 3: Klient */}
               <span className="client-name">
                 <strong>{order.nazwaFirmy || 'Brak nazwy'}</strong>
               </span>
-              
-              {/* Kolumna 4: Netto */}
               <span className="price-cell">{order.sumaNetto?.toFixed(2)} zł</span>
-              
-              {/* Kolumna 5: Brutto */}
               <span className="price-cell">{order.sumaBrutto?.toFixed(2)} zł</span>
-              
-              {/* Kolumna 6: Status */}
               <div className="status-container">
                 <span className={`status-pill ${order.status?.toLowerCase()}`}>
                   {order.status}
@@ -210,6 +218,38 @@ return (
         ))}
       </div>
 
+      {/* --- KOMPONENT PAGINACJI --- */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button 
+            disabled={currentPage === 1} 
+            onClick={() => paginate(currentPage - 1)}
+            className="page-btn"
+          >
+            &laquo; Poprzednia
+          </button>
+          
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => paginate(i + 1)}
+              className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button 
+            disabled={currentPage === totalPages} 
+            onClick={() => paginate(currentPage + 1)}
+            className="page-btn"
+          >
+            Następna &raquo;
+          </button>
+        </div>
+      )}
+
+      {/* --- MODAL (Bez zmian) --- */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nowe zamówienie">
         <form onSubmit={handleSubmit} className="order-form-sales">
           <div className="form-section">
@@ -247,12 +287,10 @@ return (
                     onChange={(e) => setNewItem({...newItem, ilosc: e.target.value})}
                   />
                 </div>
-
                 <div className="price-preview-box">
                   <span className="label">Cena j. (netto)</span>
                   <span className="value">{newItem.cenaZastosowana?.toFixed(2)} zł</span>
                 </div>
-
                 <button type="button" className="btn-add-large" onClick={addOrderItem}>
                   Dodaj produkt
                 </button>

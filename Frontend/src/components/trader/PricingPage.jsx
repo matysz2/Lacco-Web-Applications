@@ -15,6 +15,10 @@ const PricingPage = () => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState({ text: '', type: '' });
 
+  // Stan paginacji
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(10); // 10 pozycji na stronę
+
   // Ikony SVG
   const IconShield = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -37,7 +41,7 @@ const PricingPage = () => {
           setCustomers(custRes.data);
           setProducts(prodRes.data);
         }
-      } catch (err) {
+      } catch  {
         if (isMounted) showNotification('Błąd pobierania danych podstawowych', 'error');
       } finally {
         if (isMounted) setLoading(false);
@@ -62,6 +66,7 @@ const PricingPage = () => {
           // Ustawiamy oba stany - widok edycji i widok "obecnej ceny"
           setSavedPrices(pricesMap);
           setSpecialPrices(pricesMap);
+          setCurrentPage(1); // Resetujemy paginację po zmianie klienta
         } catch (err) {
           console.error("Błąd pobierania cen indywidualnych", err);
         }
@@ -70,6 +75,7 @@ const PricingPage = () => {
     } else {
       setSavedPrices({});
       setSpecialPrices({});
+      setCurrentPage(1); // Resetujemy paginację, gdy klient nie jest wybrany
     }
   }, [selectedCustomerId]);
 
@@ -81,6 +87,15 @@ const PricingPage = () => {
     setNotification({ text, type });
     setTimeout(() => setNotification({ text: '', type: '' }), 3000);
   };
+
+  // Obliczenia dla paginacji
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const totalPages = Math.ceil(products.length / productsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // 3. Główna funkcja zapisu
   const savePrice = async (product) => {
@@ -156,7 +171,7 @@ const PricingPage = () => {
               </tr>
             </thead>
             <tbody>
-              {products.map(product => {
+              {currentProducts.map(product => { // Zmieniono na currentProducts.map
                 const minPrice = (product.cenaProdukcji * 1.10).toFixed(2);
                 const currentVal = specialPrices[product.id];
                 const lastSavedVal = savedPrices[product.id];
@@ -207,6 +222,21 @@ const PricingPage = () => {
           </table>
         )}
       </div>
+
+      {/* Kontrolki paginacji */}
+      {products.length > productsPerPage && (
+        <div className="pagination">
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => paginate(index + 1)}
+              className={currentPage === index + 1 ? 'active' : ''}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

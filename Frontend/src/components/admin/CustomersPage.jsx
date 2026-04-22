@@ -4,16 +4,17 @@ import DataTable from '../common/DataTable';
 import Modal from '../common/Modal';
 import './CustomersPage.scss';
 
-/**
- * Customers Page component
- * Manages customers from leady_stolarze table
- */
 const CustomersPage = () => {
   const [customers, setCustomers] = useState([]);
   const [salesmen, setSalesmen] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   const [formData, setFormData] = useState({
     nazwaFirmy: '',
     telefon: '',
@@ -21,16 +22,27 @@ const CustomersPage = () => {
     region: '',
     handlowiec: '',
     statusWizyty: '',
-    opisNotatki: ''
+    opisNotatki: '',
+    grupaCenowa: 1 // ✅ zawsze number
   });
 
-useEffect(() => {
+  useEffect(() => {
     fetchData();
   }, []);
+
+  const getGrupaLabel = (val) => {
+    switch (val) {
+      case 1: return '1 - Tania';
+      case 2: return '2 - Średnia';
+      case 3: return '3 - Premium';
+      default: return '-';
+    }
+  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
+
       const [customersRes, salesmenRes] = await Promise.all([
         api.get('/api/customers'),
         api.get('/api/salesmen')
@@ -39,19 +51,23 @@ useEffect(() => {
       const salesmenData = salesmenRes.data || [];
       const customersData = customersRes.data || [];
 
-      // Mapujemy klientów, aby od razu przypisać imię handlowca
       const mappedCustomers = customersData.map(customer => {
-        const s = salesmenData.find(item => 
-          String(item.id).toLowerCase() === String(customer.handlowiec).toLowerCase()
+        const s = salesmenData.find(item =>
+          String(item.id) === String(customer.handlowiec)
         );
+
         return {
           ...customer,
-          displayHandlowiec: s ? `${s.firstName} ${s.lastName}` : 'Nieprzypisany'
+          displayHandlowiec: s
+            ? `${s.firstName} ${s.lastName}`
+            : 'Nieprzypisany',
+          displayGrupa: getGrupaLabel(customer.grupaCenowa)
         };
       });
 
       setSalesmen(salesmenData);
       setCustomers(mappedCustomers);
+
     } catch (error) {
       console.error('Błąd podczas pobierania danych:', error);
     } finally {
@@ -59,19 +75,30 @@ useEffect(() => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const totalPages = Math.ceil(customers.length / itemsPerPage);
+
+  const paginatedData = customers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
+
+  setFormData(prev => ({
+    ...prev,
+    [name]: name === 'grupaCenowa' 
+      ? (value === "" ? null : parseInt(value, 10)) // Jawne parsowanie na Int
+      : value
+  }));
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const payload = {
       ...formData,
-      handlowiec: formData.handlowiec || null
+      handlowiec: formData.handlowiec || null,
+      grupaCenowa: Number(formData.grupaCenowa) // ✅ 100% number
     };
 
     try {
@@ -80,8 +107,12 @@ useEffect(() => {
       } else {
         await api.post('/api/customers', payload);
       }
+
       setShowModal(false);
       setEditingCustomer(null);
+      setCurrentPage(1);
+
+      // reset form
       setFormData({
         nazwaFirmy: '',
         telefon: '',
@@ -89,8 +120,12 @@ useEffect(() => {
         region: '',
         handlowiec: '',
         statusWizyty: '',
-        opisNotatki: ''
+        opisNotatki: '',
+        grupaCenowa: 1
       });
+
+      fetchData();
+
     } catch (error) {
       console.error('Error saving customer:', error);
       alert('Błąd podczas zapisywania klienta');
@@ -99,6 +134,7 @@ useEffect(() => {
 
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
+
     setFormData({
       nazwaFirmy: customer.nazwaFirmy || '',
       telefon: customer.telefon || '',
@@ -106,16 +142,19 @@ useEffect(() => {
       region: customer.region || '',
       handlowiec: customer.handlowiec || '',
       statusWizyty: customer.statusWizyty || '',
-      opisNotatki: customer.opisNotatki || ''
+      opisNotatki: customer.opisNotatki || '',
+      grupaCenowa: customer.grupaCenowa || 1
     });
+
     setShowModal(true);
   };
 
-const handleDelete = async (id) => {
+  const handleDelete = async (id) => {
     if (globalThis.confirm('Czy na pewno chcesz usunąć tego klienta?')) {
       try {
         await api.delete(`/api/customers/${id}`);
-        fetchData(); // Zmienione z fetchCustomers()
+        setCurrentPage(1);
+        fetchData();
       } catch (error) {
         console.error('Error deleting customer:', error);
         alert('Błąd podczas usuwania klienta');
@@ -123,12 +162,9 @@ const handleDelete = async (id) => {
     }
   };
 
-  // Tutaj usuwamy getSalesmanName - nie jest już potrzebne!
-
-
-
   const handleAdd = () => {
     setEditingCustomer(null);
+
     setFormData({
       nazwaFirmy: '',
       telefon: '',
@@ -136,22 +172,20 @@ const handleDelete = async (id) => {
       region: '',
       handlowiec: '',
       statusWizyty: '',
-      opisNotatki: ''
+      opisNotatki: '',
+      grupaCenowa: 1 // ✅ NIE STRING
     });
+
     setShowModal(true);
   };
 
-
-const columns = [
+  const columns = [
     { key: 'nazwaFirmy', label: 'Nazwa firmy', sortable: true },
     { key: 'telefon', label: 'Telefon', sortable: true },
     { key: 'adres', label: 'Adres', sortable: true },
     { key: 'region', label: 'Region', sortable: true },
-    { 
-      key: 'displayHandlowiec', // To pole tworzymy w fetchData
-      label: 'Handlowiec', 
-      sortable: true 
-    }
+    { key: 'displayHandlowiec', label: 'Handlowiec', sortable: true },
+    { key: 'displayGrupa', label: 'Grupa', sortable: true } // ✅ poprawione
   ];
 
   const actions = [
@@ -180,12 +214,34 @@ const columns = [
         </button>
       </div>
 
-      <DataTable
-        data={customers}
-        columns={columns}
-        actions={actions}
-        searchable={true}
-      />
+      <div className="table-wrapper">
+        <DataTable
+          data={paginatedData}
+          columns={columns}
+          actions={actions}
+          searchable={true}
+        />
+      </div>
+
+      <div className="pagination">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(prev => prev - 1)}
+        >
+          ←
+        </button>
+
+        <span>
+          Strona {currentPage} z {totalPages}
+        </span>
+
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(prev => prev + 1)}
+        >
+          →
+        </button>
+      </div>
 
       <Modal
         isOpen={showModal}
@@ -193,11 +249,11 @@ const columns = [
         title={editingCustomer ? 'Edytuj klienta' : 'Dodaj klienta'}
       >
         <form onSubmit={handleSubmit} className="customer-form">
+
           <div className="form-group">
-            <label htmlFor="nazwaFirmy">Nazwa firmy</label>
+            <label>Nazwa firmy</label>
             <input
               type="text"
-              id="nazwaFirmy"
               name="nazwaFirmy"
               value={formData.nazwaFirmy}
               onChange={handleInputChange}
@@ -206,10 +262,9 @@ const columns = [
           </div>
 
           <div className="form-group">
-            <label htmlFor="telefon">Telefon</label>
+            <label>Telefon</label>
             <input
               type="tel"
-              id="telefon"
               name="telefon"
               value={formData.telefon}
               onChange={handleInputChange}
@@ -217,10 +272,9 @@ const columns = [
           </div>
 
           <div className="form-group">
-            <label htmlFor="adres">Adres</label>
+            <label>Adres</label>
             <input
               type="text"
-              id="adres"
               name="adres"
               value={formData.adres}
               onChange={handleInputChange}
@@ -228,10 +282,9 @@ const columns = [
           </div>
 
           <div className="form-group">
-            <label htmlFor="region">Region</label>
+            <label>Region</label>
             <input
               type="text"
-              id="region"
               name="region"
               value={formData.region}
               onChange={handleInputChange}
@@ -239,31 +292,43 @@ const columns = [
           </div>
 
           <div className="form-group">
-            <label htmlFor="handlowiec">Handlowiec</label>
+            <label>Handlowiec</label>
             <select
-              id="handlowiec"
               name="handlowiec"
               value={formData.handlowiec}
               onChange={handleInputChange}
               required
             >
               <option value="">Wybierz handlowca</option>
-              {salesmen.map((salesman) => (
-                <option key={salesman.id} value={salesman.id}>
-                  {salesman.firstName} {salesman.lastName}
+              {salesmen.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.firstName} {s.lastName}
                 </option>
               ))}
             </select>
           </div>
 
+          {/* ✅ JEDEN poprawny select */}
+ 
+ <div className="form-group">
+  <label>Grupa cenowa</label>
+<select
+  name="grupaCenowa"
+  value={String(formData.grupaCenowa)} // Konwersja na string dla spójności z DOM
+  onChange={handleInputChange}
+>
+  <option value="1">1 - Tania</option>
+  <option value="2">2 - Średnia</option>
+  <option value="3">3 - Premium</option>
+</select>
+</div>
+
           <div className="form-group">
-            <label htmlFor="opisNotatki">Uwagi</label>
+            <label>Uwagi</label>
             <textarea
-              id="opisNotatki"
               name="opisNotatki"
               value={formData.opisNotatki}
               onChange={handleInputChange}
-              rows="3"
             />
           </div>
 

@@ -59,10 +59,19 @@ public ResponseEntity<?> updateLead(@PathVariable Integer id, @RequestBody LeadS
         .map(lead -> {
             lead.setNazwaFirmy(updatedData.getNazwaFirmy());
             lead.setAdres(updatedData.getAdres());
+            lead.setTelefon(updatedData.getTelefon());
+            lead.setRegion(updatedData.getRegion());
+            lead.setStronaWww(updatedData.getStronaWww());
+            
+            // KLUCZOWE: Musisz jawnie ustawić grupę cenową
+            lead.setGrupaCenowa(updatedData.getGrupaCenowa()); 
+            
+            lead.setHandlowiec(updatedData.getHandlowiec());
             lead.setStatusWizyty(updatedData.getStatusWizyty());
             lead.setOpisNotatki(updatedData.getOpisNotatki());
+            lead.setCzyOdwiedzony(updatedData.getCzyOdwiedzony());
+            lead.setNawigacja(updatedData.getNawigacja());
             
-            // Ważne: aktualizujemy datę edycji przed zapisem
             lead.setDataOstatniejEdycji(LocalDateTime.now());
             
             return ResponseEntity.ok(repository.save(lead));

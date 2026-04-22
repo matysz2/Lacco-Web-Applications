@@ -31,7 +31,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await api.get('/auth/me', {
+      const response = await api.get('/api/auth/me', {
 headers: { Authorization: `Bearer ${token}` }      });
       setUser(response.data);
       if (response.data.role !== 'ADMIN') {
@@ -53,7 +53,7 @@ headers: { Authorization: `Bearer ${token}` }      });
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout');
+      await api.post('/api/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

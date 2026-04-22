@@ -31,7 +31,7 @@ const TraderDashboard = () => {
     }
 
     try {
-      const response = await api.get('/auth/me', {
+      const response = await api.get('/api/auth/me', {
         headers: { Authorization: token }
       });
       setUser(response.data);

@@ -17,6 +17,6 @@ public record CustomerDto(
     LocalDateTime dataOstatniejEdycji,
     String nawigacja,
     String stronaWww,
-    String grupaCenowa,
+    Integer grupaCenowa,
     LocalDateTime ostatniaWizyta
 ) {}

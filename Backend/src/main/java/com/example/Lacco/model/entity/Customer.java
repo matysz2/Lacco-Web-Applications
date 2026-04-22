@@ -16,14 +16,14 @@ import java.time.OffsetDateTime;
  * Maps to 'leady_stolarze' table in the database
  */
 @Entity
-@Table(name = "leady_stolarze")
-@Getter
+@Table(name = "leady_stolarze", schema = "public")
+@Getter 
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Customer {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -37,11 +37,12 @@ public class Customer {
 
     @Column(name = "strona_www")
     private String stronaWww;
-
+    
     private String region;
 
+    
     @Column(name = "grupa_cenowa")
-    private String grupaCenowa;
+    private Integer grupaCenowa;
 
     private String handlowiec;
 
@@ -63,6 +64,6 @@ public class Customer {
     @Column(name = "ostatnia_wizyta")
     private LocalDateTime ostatniaWizyta;
 
-    // Dodatkowe pola, o których wspomniałeś w SELECT:
+@Column(columnDefinition = "text")
     private String nawigacja; 
 }

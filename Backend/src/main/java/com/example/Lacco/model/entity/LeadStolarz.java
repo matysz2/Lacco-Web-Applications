@@ -3,7 +3,11 @@ package com.example.Lacco.model.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.sql.Types;
 import java.time.LocalDateTime;
+
+import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "leady_stolarze", schema = "public")
@@ -24,11 +28,12 @@ public class LeadStolarz {
 
     @Column(name = "strona_www")
     private String stronaWww;
-
+    
     private String region;
 
+    
     @Column(name = "grupa_cenowa")
-    private String grupaCenowa;
+    private Integer grupaCenowa;
 
     private String handlowiec;
 
@@ -50,6 +55,6 @@ public class LeadStolarz {
     @Column(name = "ostatnia_wizyta")
     private LocalDateTime ostatniaWizyta;
 
-    // Dodatkowe pola, o których wspomniałeś w SELECT:
+@Column(columnDefinition = "text")
     private String nawigacja; 
 }

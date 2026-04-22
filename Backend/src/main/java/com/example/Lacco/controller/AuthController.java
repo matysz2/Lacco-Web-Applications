@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost", "http://127.0.0.1:5173"})
 @RestController
-@RequestMapping("/auth") // Zmieniono z /api/auth na /auth
+@RequestMapping("/api/auth") // Zmieniono z /api/auth na /auth
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {

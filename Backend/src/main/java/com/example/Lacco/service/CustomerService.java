@@ -94,24 +94,22 @@ public class CustomerService {
         );
     }
 
-    private Customer toEntity(CustomerDto dto) {
-        return Customer.builder()
-                .id(dto.id())
-                .nazwaFirmy(dto.nazwaFirmy())
-                .telefon(dto.telefon())
-                .adres(dto.adres())
-                .region(dto.region())
-                .handlowiec(dto.handlowiec())
-                // Konwersja LocalDate na LocalDateTime dla encji
-                .dataPozyskania(dto.dataPozyskania() != null ? dto.dataPozyskania().atStartOfDay() : null)
-                .czyOdwiedzony(dto.czyOdwiedzony())
-                .statusWizyty(dto.statusWizyty())
-                .opisNotatki(dto.opisNotatki())
-                .dataOstatniejEdycji(dto.dataOstatniejEdycji())
-                .nawigacja(dto.nawigacja())
-                .stronaWww(dto.stronaWww())
-                .grupaCenowa(dto.grupaCenowa())
-                .ostatniaWizyta(dto.ostatniaWizyta())
-                .build();
-    }
+private Customer toEntity(CustomerDto dto) {
+    Customer customer = new Customer();
+    customer.setId(dto.id());
+    customer.setNazwaFirmy(dto.nazwaFirmy());
+    customer.setTelefon(dto.telefon());
+    customer.setAdres(dto.adres());
+    customer.setRegion(dto.region());
+    customer.setHandlowiec(dto.handlowiec());
+    customer.setDataPozyskania(dto.dataPozyskania() != null ? dto.dataPozyskania().atStartOfDay() : null);
+    customer.setCzyOdwiedzony(dto.czyOdwiedzony());
+    customer.setStatusWizyty(dto.statusWizyty());
+    customer.setOpisNotatki(dto.opisNotatki());
+    customer.setNawigacja(dto.nawigacja());
+    customer.setStronaWww(dto.stronaWww());
+    customer.setGrupaCenowa(dto.grupaCenowa());
+    customer.setOstatniaWizyta(dto.ostatniaWizyta());
+    return customer;
+}
 }

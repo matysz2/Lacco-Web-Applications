@@ -23,10 +23,56 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap; // ✅ nie łamie się tekst
 
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+    }
+  }
+
+  // ✅ SCROLL + lepszy UX
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; // 📱 płynny scroll iOS
+
+    table {
+      min-width: 600px; // ✅ zapobiega ściskaniu kolumn
+    }
+  }
+
+  // ✅ PAGINACJA
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap; // ✅ mobile friendly
+
+    span {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      background: #667eea;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+
+      &:hover:not(:disabled) {
+        background: #5a6fd8;
+      }
+
+      &:disabled {
+        background: #ccc;
+        cursor: not-allowed;
       }
     }
   }
@@ -42,7 +88,9 @@
         font-weight: 500;
       }
 
-      input {
+      input,
+      select,
+      textarea { // ✅ brakowało select + textarea
         width: 100%;
         padding: 12px;
         border: 2px solid #e0e0e0;
@@ -94,21 +142,56 @@
   }
 }
 
-// Mobile styles
+// ✅ MOBILE
 @media (max-width: 768px) {
   .customers-page {
-    .page-header {
-      flex-direction: column;
-      align-items: flex-start;
 
-      h1 {
-        margin-bottom: 15px;
-      }
+    .table-wrapper {
+      overflow-x: hidden; // ❗ wyłączamy scroll
+    }
 
-      .add-btn {
-        width: 100%;
-        justify-content: center;
-      }
+    table {
+      display: block;
+    }
+
+    thead {
+      display: none; // ❗ chowamy nagłówki
+    }
+
+    tbody {
+      display: block;
+    }
+
+    tr {
+      display: block;
+      margin-bottom: 15px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border: none;
+      font-size: 0.9rem;
+    }
+
+    // 🔥 NAZWA = CAŁA LINIA
+    td:nth-child(1) {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    // label przed wartością
+    td::before {
+      content: attr(data-label);
+      font-weight: 500;
+      color: #666;
     }
   }
-}
+} 
+

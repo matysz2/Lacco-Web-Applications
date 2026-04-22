@@ -6,13 +6,18 @@ import './WarehousePage.scss';
 
 /**
  * Warehouse Page component
- * Manages products in warehouse
+ * Manages products in warehouse with full responsive support and pagination
  */
 const WarehousePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  
+  // Paginacja - 10 elementów
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const [formData, setFormData] = useState({
     kodProduktu: '',
     grupa: '',
@@ -40,6 +45,12 @@ const WarehousePage = () => {
     }
   };
 
+  // Logika paginacji
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = products.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -61,36 +72,23 @@ const WarehousePage = () => {
       fetchProducts();
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({
-        kodProduktu: '',
-        grupa: '',
-        jm: '',
-        nazwa: '',
-        opakowanie: 0,
-        cenaProdukcji: 0,
-        cenaA: 0,
-        cenaB: 0,
-        cenaC: 0
-      });
+      resetForm();
     } catch (error) {
       console.error('Error saving product:', error);
       alert('Błąd podczas zapisywania produktu');
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      kodProduktu: '', grupa: '', jm: '', nazwa: '',
+      opakowanie: 0, cenaProdukcji: 0, cenaA: 0, cenaB: 0, cenaC: 0
+    });
+  };
+
   const handleEdit = (product) => {
     setEditingProduct(product);
-    setFormData({
-      kodProduktu: product.kodProduktu || '',
-      grupa: product.grupa || '',
-      jm: product.jm || '',
-      nazwa: product.nazwa || '',
-      opakowanie: product.opakowanie || 0,
-      cenaProdukcji: product.cenaProdukcji || 0,
-      cenaA: product.cenaA || 0,
-      cenaB: product.cenaB || 0,
-      cenaC: product.cenaC || 0
-    });
+    setFormData({ ...product });
     setShowModal(true);
   };
 
@@ -101,90 +99,77 @@ const WarehousePage = () => {
         fetchProducts();
       } catch (error) {
         console.error('Error deleting product:', error);
-        alert('Błąd podczas usuwania produktu');
       }
     }
   };
 
-  const handleAdd = () => {
-    setEditingProduct(null);
-    setFormData({
-      kodProduktu: '',
-      grupa: '',
-      jm: '',
-      nazwa: '',
-      opakowanie: 0,
-      cenaProdukcji: 0,
-      cenaA: 0,
-      cenaB: 0,
-      cenaC: 0
-    });
-    setShowModal(true);
-  };
-
-  const columns = [
-    { key: 'kodProduktu', label: 'Kod produktu', sortable: true },
-    { key: 'nazwa', label: 'Nazwa', sortable: true },
-    { key: 'grupa', label: 'Grupa', sortable: true },
-    { key: 'jm', label: 'Jm', sortable: true },
+const columns = [
+  { key: 'kodProduktu', label: 'Kod', className: 'col-desktop' }, // Ukryte na mobile
+  { key: 'nazwa', label: 'Nazwa', className: 'col-mobile' },     // Widoczne na mobile
+  { key: 'grupa', label: 'Grupa', className: 'col-desktop' },
+    { key: 'jm', label: 'Jm', sortable: true, className: 'col-desktop' },
     {
       key: 'opakowanie',
-      label: 'Opakowanie',
-      sortable: true,
-      render: (value) => value !== null && value !== undefined ? value.toString() : '-'
+      label: 'Opak.',
+      className: 'col-desktop',
+      render: (val) => val ?? '-'
     },
     {
       key: 'cenaA',
       label: 'Cena A',
-      sortable: true,
-      render: (value) => value !== null && value !== undefined ? `${value.toFixed(2)} PLN` : '-'
+      className: 'col-desktop',
+      render: (val) => val ? `${val.toFixed(2)} PLN` : '-'
     },
     {
       key: 'cenaB',
       label: 'Cena B',
-      sortable: true,
-      render: (value) => value !== null && value !== undefined ? `${value.toFixed(2)} PLN` : '-'
+      className: 'col-desktop',
+      render: (val) => val ? `${val.toFixed(2)} PLN` : '-'
     },
     {
       key: 'cenaC',
       label: 'Cena C',
-      sortable: true,
-      render: (value) => value !== null && value !== undefined ? `${value.toFixed(2)} PLN` : '-'
+      className: 'col-desktop',
+      render: (val) => val ? `${val.toFixed(2)} PLN` : '-'
     }
   ];
 
   const actions = [
-    {
-      label: 'Edytuj',
-      onClick: handleEdit,
-      className: 'edit-btn'
-    },
-    {
-      label: 'Usuń',
-      onClick: (item) => handleDelete(item.id),
-      className: 'delete-btn'
-    }
+    { label: 'Edytuj', onClick: handleEdit, className: 'edit-btn' },
+    { label: 'Usuń', onClick: (item) => handleDelete(item.id), className: 'delete-btn' }
   ];
 
-  if (loading) {
-    return <div className="loading">Ładowanie produktów...</div>;
-  }
+  if (loading) return <div className="loading">Ładowanie...</div>;
 
   return (
     <div className="warehouse-page">
       <div className="page-header">
         <h1>Magazyn</h1>
-        <button className="add-btn" onClick={handleAdd}>
+        <button className="add-btn" onClick={() => { resetForm(); setEditingProduct(null); setShowModal(true); }}>
           ➕ Dodaj produkt
         </button>
       </div>
 
-      <DataTable
-        data={products}
-        columns={columns}
-        actions={actions}
-        searchable={true}
-      />
+<div className="table-responsive">
+  <DataTable data={currentItems} columns={columns} actions={actions} />
+</div>
+ 
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>&laquo;</button>
+          {[...Array(totalPages).keys()].map(num => (
+            <button 
+              key={num + 1} 
+              onClick={() => setCurrentPage(num + 1)}
+              className={currentPage === num + 1 ? 'active' : ''}
+            >
+              {num + 1}
+            </button>
+          ))}
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)}>&raquo;</button>
+        </div>
+      )}
 
       <Modal
         isOpen={showModal}
@@ -193,123 +178,44 @@ const WarehousePage = () => {
       >
         <form onSubmit={handleSubmit} className="product-form">
           <div className="form-group">
-            <label htmlFor="kodProduktu">Kod produktu</label>
-            <input
-              type="text"
-              id="kodProduktu"
-              name="kodProduktu"
-              value={formData.kodProduktu}
-              onChange={handleInputChange}
-              required
-            />
+            <label>Kod produktu</label>
+            <input type="text" name="kodProduktu" value={formData.kodProduktu} onChange={handleInputChange} required />
           </div>
-
           <div className="form-group">
-            <label htmlFor="nazwa">Nazwa</label>
-            <input
-              type="text"
-              id="nazwa"
-              name="nazwa"
-              value={formData.nazwa}
-              onChange={handleInputChange}
-              required
-            />
+            <label>Nazwa</label>
+            <input type="text" name="nazwa" value={formData.nazwa} onChange={handleInputChange} required />
           </div>
-
           <div className="form-group">
-            <label htmlFor="grupa">Grupa</label>
-            <input
-              type="text"
-              id="grupa"
-              name="grupa"
-              value={formData.grupa}
-              onChange={handleInputChange}
-            />
+            <label>Grupa</label>
+            <input type="text" name="grupa" value={formData.grupa} onChange={handleInputChange} />
           </div>
-
           <div className="form-group">
-            <label htmlFor="jm">Jednostka miary</label>
-            <input
-              type="text"
-              id="jm"
-              name="jm"
-              value={formData.jm}
-              onChange={handleInputChange}
-            />
+            <label>Jednostka miary</label>
+            <input type="text" name="jm" value={formData.jm} onChange={handleInputChange} />
           </div>
-
           <div className="form-group">
-            <label htmlFor="opakowanie">Opakowanie</label>
-            <input
-              type="number"
-              id="opakowanie"
-              name="opakowanie"
-              value={formData.opakowanie}
-              onChange={handleInputChange}
-              step="0.01"
-              min="0"
-            />
+            <label>Opakowanie</label>
+            <input type="number" name="opakowanie" step="0.01" value={formData.opakowanie} onChange={handleInputChange} />
           </div>
-
           <div className="form-group">
-            <label htmlFor="cenaProdukcji">Cena produkcji (PLN)</label>
-            <input
-              type="number"
-              id="cenaProdukcji"
-              name="cenaProdukcji"
-              value={formData.cenaProdukcji}
-              onChange={handleInputChange}
-              step="0.01"
-              min="0"
-            />
+            <label>Cena produkcji</label>
+            <input type="number" name="cenaProdukcji" step="0.01" value={formData.cenaProdukcji} onChange={handleInputChange} />
           </div>
-
           <div className="form-group">
-            <label htmlFor="cenaA">Cena A (PLN)</label>
-            <input
-              type="number"
-              id="cenaA"
-              name="cenaA"
-              value={formData.cenaA}
-              onChange={handleInputChange}
-              step="0.01"
-              min="0"
-            />
+            <label>Cena A</label>
+            <input type="number" name="cenaA" step="0.01" value={formData.cenaA} onChange={handleInputChange} />
           </div>
-
           <div className="form-group">
-            <label htmlFor="cenaB">Cena B (PLN)</label>
-            <input
-              type="number"
-              id="cenaB"
-              name="cenaB"
-              value={formData.cenaB}
-              onChange={handleInputChange}
-              step="0.01"
-              min="0"
-            />
+            <label>Cena B</label>
+            <input type="number" name="cenaB" step="0.01" value={formData.cenaB} onChange={handleInputChange} />
           </div>
-
           <div className="form-group">
-            <label htmlFor="cenaC">Cena C (PLN)</label>
-            <input
-              type="number"
-              id="cenaC"
-              name="cenaC"
-              value={formData.cenaC}
-              onChange={handleInputChange}
-              step="0.01"
-              min="0"
-            />
+            <label>Cena C</label>
+            <input type="number" name="cenaC" step="0.01" value={formData.cenaC} onChange={handleInputChange} />
           </div>
-
           <div className="form-actions">
-            <button type="button" onClick={() => setShowModal(false)}>
-              Anuluj
-            </button>
-            <button type="submit">
-              {editingProduct ? 'Zapisz' : 'Dodaj'}
-            </button>
+            <button type="button" onClick={() => setShowModal(false)}>Anuluj</button>
+            <button type="submit">{editingProduct ? 'Zapisz' : 'Dodaj'}</button>
           </div>
         </form>
       </Modal>
