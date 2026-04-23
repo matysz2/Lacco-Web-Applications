@@ -1,42 +1,30 @@
+version: "3.9"
+
 services:
   backend:
-    image: maven:3.9-eclipse-temurin-21 
+    build:
+      context: ./Backend
     container_name: lacco-backend
-    working_dir: /app
+    restart: always
     ports:
       - "8081:8081"
-    volumes:
-      - ./Backend:/app
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
-      - SPRING_DATASOURCE_USERNAME=postgres.xsojbzwydgdjtaabgygd
-      - SPRING_DATASOURCE_PASSWORD=Wiktor@180918
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - JWT_SECRET=Ym0yZ2p6N3I5eHdubm00cW9waGtyc3R1dnd4eXphYmNkZWZnaGk0bTVuNnA3cThzOXR1dg==
-      - MAIL_PASSWORD=nlewtdknlexaatjh
-    entrypoint: 
-      - /bin/sh
-      - -c
-      - "./mvnw spring-boot:run -Dspring-boot.run.jvmArguments='-Xmx512m'"
-    deploy:
-      resources:
-        limits:
-          memory: 1g
-        reservations:
-          memory: 512m
+    env_file:
+      - .env
+    networks:
+      - lacco-network
 
   frontend:
-    build: ./Frontend
+    build:
+      context: ./Frontend
     container_name: lacco-frontend
-    working_dir: /app
+    restart: always
     ports:
-      - "3000:3000"
-    environment:
-      - WATCHPACK_POLLING=true 
-      - CHOKIDAR_USEPOLLING=true
-    command: npm run dev -- --host --port 3000
-    volumes:
-      - ./Frontend:/app
-      - /app/node_modules
+      - "80:80"
     depends_on:
       - backend
+    networks:
+      - lacco-network
+
+networks:
+  lacco-network:
+    driver: bridge
