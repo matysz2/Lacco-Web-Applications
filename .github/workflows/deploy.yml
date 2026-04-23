@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker image
-        run: docker build -t lacco-app .
+        run: docker build -t lacco-app -f Backend/Dockerfile Backend
 
       - name: Login DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
