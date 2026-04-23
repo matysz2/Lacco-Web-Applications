@@ -24,6 +24,12 @@ coverage/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.local.*
+.env.example
+.env.example.*
+.env.development.local
+.env.test.local
+.env.production.local
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
