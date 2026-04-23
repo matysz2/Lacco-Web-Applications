@@ -2,8 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    build:
-      context: ./Backend
+    image: matysz21/lacco-backend:latest
     container_name: lacco-backend
     restart: always
     ports:
@@ -14,8 +13,7 @@ services:
       - lacco-network
 
   frontend:
-    build:
-      context: ./Frontend
+    image: matysz21/lacco-frontend:latest
     container_name: lacco-frontend
     restart: always
     ports:
@@ -24,7 +22,6 @@ services:
       - backend
     networks:
       - lacco-network
-
 networks:
   lacco-network:
     driver: bridge
