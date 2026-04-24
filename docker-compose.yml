@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     networks:
-      - lacco-network
+      - monitoring-network
 
   frontend:
     image: matysz21/lacco-frontend:latest
@@ -21,7 +21,9 @@ services:
     depends_on:
       - backend
     networks:
-      - lacco-network
+      - monitoring-network
+
 networks:
-  lacco-network:
-    driver: bridge
+  monitoring-network:
+    external: true
+    name: monitoring

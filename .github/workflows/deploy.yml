@@ -9,24 +9,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # 🔥 BUILD BACKEND (Dockerfile w Backend)
+      # 1. Budowanie obrazu Backend
       - name: Build Docker image
         run: docker build -t lacco-app -f Backend/Dockerfile Backend
 
-      # 🔐 LOGIN DOCKERHUB
+      # 2. Logowanie do DockerHub
       - name: Login DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 📦 PUSH IMAGE
-      - name: Push image
+      # 3. Tagowanie i wysyłka obrazu
+      - name: Push image to DockerHub
         run: |
           docker tag lacco-app ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-      # 🚀 DEPLOY NA SERWER
+      # 4. Deploy na serwerze przez SSH
       - name: Deploy on server (SSH)
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -34,14 +34,18 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Pobranie najnowszego obrazu
             docker pull ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-            # 🔥 zawsze jeden kontener (clean deploy)
+            # Zatrzymanie i usunięcie starego kontenera
             docker stop lacco || true
             docker rm lacco || true
 
+            # Uruchomienie nowego kontenera z obsługą sieci monitoringu
+            # UWAGA: Sieć 'monitoring' musi istnieć na serwerze (docker network create monitoring)
             docker run -d \
               --restart unless-stopped \
+              --network monitoring \
               -p 8081:8081 \
               --name lacco \
               -e SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}" \
@@ -52,3 +56,6 @@ jobs:
               -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
               -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
               ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
+
+            # Usuwanie starych, nieużywanych obrazów w celu oszczędności miejsca na dysku
+            docker image prune -f
