@@ -35,23 +35,25 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authz -> authz
-                // 1. Pozwól na zapytania typu OPTIONS (CORS preflight)
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // 2. PUBLICZNE ENDPOINTY (Logowanie i Rejestracja)
-                // Dodano /api/auth/** ponieważ Twój front-end uderza w lacco.pl/api/auth/login
-                .requestMatchers("/api/auth/**", "/auth/**").permitAll()
-                
-                // 3. Specyficzne wyjątki (np. dla traderów)
-                .requestMatchers("/api/orders/trader/**").permitAll()
-                
-                // 4. Cała reszta API wymaga zalogowania
-                .requestMatchers("/api/**").authenticated()
-                
-                // 5. Jakiekolwiek inne zapytanie również wymaga autoryzacji
-                .anyRequest().authenticated()
-            )
+        .authorizeHttpRequests(authz -> authz
+    // 1. Pozwól na zapytania typu OPTIONS (CORS preflight)
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    
+    // 2. PUBLICZNE ENDPOINTY
+    .requestMatchers("/api/auth/**", "/auth/**").permitAll()
+    
+    // 🔥 DODANO: Wyjątek dla Prometheusa i monitoringu
+    .requestMatchers("/actuator/**").permitAll() 
+    
+    // 3. Specyficzne wyjątki
+    .requestMatchers("/api/orders/trader/**").permitAll()
+    
+    // 4. Cała reszta API wymaga zalogowania
+    .requestMatchers("/api/**").authenticated()
+    
+    // 5. Jakiekolwiek inne zapytanie również wymaga autoryzacji
+    .anyRequest().authenticated()
+)
             // Dodanie filtra JWT przed filtrem logowania
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
