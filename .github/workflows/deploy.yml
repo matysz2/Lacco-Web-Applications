@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # 🔥 BUILD BACKEND
+      # 🔥 BUILD BACKEND (Dockerfile w Backend)
       - name: Build Docker image
         run: docker build -t lacco-app -f Backend/Dockerfile Backend
 
@@ -36,7 +36,7 @@ jobs:
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-            # 🔥 zawsze jeden kontener (brak konfliktów)
+            # 🔥 zawsze jeden kontener (clean deploy)
             docker stop lacco || true
             docker rm lacco || true
 
@@ -48,5 +48,7 @@ jobs:
               -e SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}" \
               -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
               -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
               -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
+              -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
               ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
