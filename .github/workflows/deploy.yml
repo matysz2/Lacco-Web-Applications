@@ -34,20 +34,22 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Pobranie najnowszego obrazu
+            # 1. Pobranie najnowszego obrazu
             docker pull ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-            # Zatrzymanie i usunięcie starego kontenera
-            docker stop lacco || true
-            docker rm lacco || true
+            # 2. Zatrzymanie i usunięcie starego kontenera
+            # Używamy lacco-backend, aby pasowało do konfiguracji Prometheusa
+            docker stop lacco-backend || true
+            docker rm lacco-backend || true
 
-            # Uruchomienie nowego kontenera z obsługą sieci monitoringu
-            # UWAGA: Sieć 'monitoring' musi istnieć na serwerze (docker network create monitoring)
+            # 3. Uruchomienie nowego kontenera
+            # --network monitoring: łączy aplikację z Prometheusem i Grafaną
+            # --name lacco-backend: nazwa, której szuka Prometheus
             docker run -d \
               --restart unless-stopped \
               --network monitoring \
               -p 8081:8081 \
-              --name lacco \
+              --name lacco-backend \
               -e SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}" \
               -e SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}" \
               -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
@@ -57,5 +59,5 @@ jobs:
               -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
               ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-            # Usuwanie starych, nieużywanych obrazów w celu oszczędności miejsca na dysku
+            # 4. Czyszczenie starych obrazów (oszczędność miejsca na dysku)
             docker image prune -f
