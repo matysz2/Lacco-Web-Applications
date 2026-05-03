@@ -1,0 +1,31 @@
+groups:
+  - name: LaccoAlerts
+    rules:
+      - alert: BackendOffline
+        expr: up{job="lacco-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AWARIA: Backend Lacco nie odpowiada!"
+          description: "Kontener lacco jest offline od ponad minuty."
+
+      - alert: HighMemoryUsage
+        expr: (sum(jvm_memory_used_bytes{area="heap"}) / sum(jvm_memory_max_bytes{area="heap"})) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OSTRZEZENIE: Malo pamieci w JVM"
+          description: "Zuzycie pamieci Heap przekroczylo 90%."
+
+  - name: DockerAlerts
+    rules:
+      - alert: ContainerMissing
+        expr: absent(container_last_seen{name="lacco-backend"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend lacco padl"
+          description: "Kontener lacco-backend zniknal z systemu (cAdvisor go nie widzi)."

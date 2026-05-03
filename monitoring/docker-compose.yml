@@ -1,0 +1,77 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    restart: always
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: always
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    restart: always
+    ports:
+      - "9093:9093"
+    networks:
+      - monitoring
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    networks:
+      - monitoring
+    environment:
+      - N8N_METRICS_ENABLED=true
+      - N8N_METRICS_PREFIX=n8n_
+      - DB_SQLITE_BUSY_TIMEOUT=30000
+      - DB_SQLITE_VACUUM_ON_STARTUP=true
+      - N8N_BLOCK_PY_AND_JS_MODULES=true
+      - N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN=true
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - /home/ubuntu/moje-ai/n8n_data:/home/node/.n8n
+
+networks:
+  monitoring:
+    external: true
