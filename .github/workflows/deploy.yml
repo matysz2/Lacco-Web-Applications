@@ -12,23 +12,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-     
       - name: Login DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      
       - name: Build & Push Backend
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest -f Backend/Dockerfile Backend
           docker push ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-    
       - name: Build & Push Frontend
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest -f Frontend/Dockerfile Frontend
           docker push ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest
 
-      
       - name: Deploy on server (SSH)
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -36,11 +32,17 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Pobranie najnowszych obrazów
+            # 1. Podmiana placeholderów w konfiguracji Alertmanagera na serwerze
+            # Zakładamy, że pliki monitoringu znajdują się w katalogu monitoring/
+            sed -i "s|SLACK_URL_DEFAULT_PLACEHOLDER|${{ secrets.SLACK_WEBHOOK_URL_DEFAULT }}|g" monitoring/alertmanager.yml
+            sed -i "s|SLACK_URL_CRITICAL_PLACEHOLDER|${{ secrets.SLACK_WEBHOOK_URL_CRITICAL }}|g" monitoring/alertmanager.yml
+            sed -i "s|SLACK_URL_WARNING_PLACEHOLDER|${{ secrets.SLACK_WEBHOOK_URL_WARNING }}|g" monitoring/alertmanager.yml
+
+            # 2. Pobranie najnowszych obrazów
             docker pull ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest
 
-            # Aktualizacja BACKENDU
+            # 3. Aktualizacja BACKENDU
             docker stop lacco-backend || true
             docker rm lacco-backend || true
             docker run -d \
@@ -57,7 +59,7 @@ jobs:
               -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
               ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-            # Aktualizacja FRONTENDU
+            # 4. Aktualizacja FRONTENDU
             docker stop lacco-frontend || true
             docker rm lacco-frontend || true
             docker run -d \
@@ -67,5 +69,8 @@ jobs:
               -p 80:80 \
               ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest
 
-            # Czyszczenie nieużywanych obrazów
+            # 5. Restart Alertmanagera, aby załadował nową konfigurację z linkami Slack
+            docker restart alertmanager || true
+
+            # 6. Czyszczenie nieużywanych obrazów
             docker image prune -f

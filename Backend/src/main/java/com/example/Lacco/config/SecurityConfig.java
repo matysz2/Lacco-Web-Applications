@@ -77,7 +77,9 @@ public CorsConfigurationSource corsConfigurationSource() {
         "http://localhost",
         "http://34.55.34.201",
         "http://34.55.34.201:8080", // 🔥 DODANO: Twój aktualny port Frontendu
-        "http://34.55.34.201:80"     // Na wszelki wypadek
+        "http://34.55.34.201:80",
+        "http://34.7.166.90",
+        "http://34.7.166.90:8081"     // Na wszelki wypadek
     ));
     
     // Reszta konfiguracji bez zmian...
