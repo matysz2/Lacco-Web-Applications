@@ -18,7 +18,8 @@ public class CorsConfig {
                 "http://localhost:*",
                 "http://127.0.0.1:*",
                 "https://lacco.pl",
-                "https://www.lacco.pl"
+                "https://www.lacco.pl",
+                "http://34.55.34.201:*"
         )
         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
         .allowedHeaders("*")

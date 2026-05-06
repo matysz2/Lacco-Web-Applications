@@ -76,7 +76,8 @@ public CorsConfigurationSource corsConfigurationSource() {
         "http://localhost:3000", 
         "http://localhost:5173", 
         "http://localhost", 
-        "http://127.0.0.1:5173"
+        "http://127.0.0.1:5173",
+        "http://34.55.34.201"
     ));
     
     // Wzorce dla środowiska deweloperskiego
@@ -118,7 +119,8 @@ public CorsFilter corsFilter() {
         "http://localhost:3000", 
         "http://localhost:5173", 
         "http://localhost", 
-        "http://127.0.0.1:5173"
+        "http://127.0.0.1:5173",
+        "http://34.55.34.201:*"
     ));
     
     configuration.setAllowedOriginPatterns(List.of(
