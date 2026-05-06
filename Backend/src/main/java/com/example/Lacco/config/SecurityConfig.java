@@ -69,38 +69,21 @@ public class SecurityConfig {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     
-    // Dodano Twoje domeny produkcyjne z HTTPS
     configuration.setAllowedOrigins(List.of(
         "https://lacco.pl", 
         "https://www.lacco.pl",
         "http://localhost:3000", 
         "http://localhost:5173", 
-        "http://localhost", 
-        "http://127.0.0.1:5173",
-        "http://34.55.34.201"
+        "http://localhost",
+        "http://34.55.34.201",
+        "http://34.55.34.201:8080", // 🔥 DODANO: Twój aktualny port Frontendu
+        "http://34.55.34.201:80"     // Na wszelki wypadek
     ));
     
-    // Wzorce dla środowiska deweloperskiego
-    configuration.setAllowedOriginPatterns(List.of(
-        "http://localhost:*", 
-        "http://127.0.0.1:*"
-    ));
-    
+    // Reszta konfiguracji bez zmian...
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    
-    // Nagłówki wymagane do komunikacji z React i JWT
-    configuration.setAllowedHeaders(List.of(
-        "Authorization", 
-        "Cache-Control", 
-        "Content-Type", 
-        "X-Requested-With", 
-        "Access-Control-Allow-Origin"
-    ));
-    
-    // Pozwala na przesyłanie ciasteczek i nagłówka Authorization
+    configuration.setAllowedHeaders(List.of("*")); // Uprośćmy to na chwilę dla testu
     configuration.setAllowCredentials(true);
-    
-    // Umożliwia Reactowi odczytanie tokena JWT z nagłówka
     configuration.setExposedHeaders(List.of("Authorization"));
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
