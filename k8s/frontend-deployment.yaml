@@ -19,4 +19,4 @@ spec:
         - containerPort: 80
         env:
         - name: VITE_API_URL
-          value: "http://backend:8080" # Tu dzieje się magia – używamy nazwy serwisu!
+          value: "http://backend:8080"

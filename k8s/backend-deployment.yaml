@@ -3,6 +3,40 @@ kind: Deployment
 metadata:
   name: lacco-backend
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lacco-backend
+  template:
+    metadata:
+      labels:
+        app: lacco-backend
+    spec:
+      containers:
+      - name: lacco-backend
+        image: matysz21/lacco-app:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:6543/postgres?prepareThreshold=0"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "postgres.xsojbzwydgdjtaabgygd"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "Wiktor@180918"
+        - name: JWT_SECRET
+          value: "Ym0yZ2p6N3I5eHdubm00cW9waGtyc3R1dnd4eXphYmNkZWZnaGk0bTVuNnA3cThzOXR1dg=="
+        - name: MAIL_PASSWORD
+          value: "nlewtdknlexaatjh"
+        - name: VITE_API_URL
+          value: "http://backend:8080"
+        - name: FRONTEND_URL
+          value: "http://localhost:30080"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lacco-backend
+spec:
   replicas: 2
   selector:
     matchLabels:
