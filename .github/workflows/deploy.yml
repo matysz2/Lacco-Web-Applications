@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3. Budowanie i wysyłanie Backend-u
+      # 3. Budowanie i wysyłanie Backend-u z unikalnym tagiem (SHA)
       - name: Build & Push Backend
         uses: docker/build-push-action@v5
         with:
@@ -31,7 +31,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-      # 4. Budowanie i wysyłanie Frontend-u
+      # 4. Budowanie i wysyłanie Frontend-u z unikalnym tagiem (SHA)
       - name: Build & Push Frontend
         uses: docker/build-push-action@v5
         with:
@@ -42,30 +42,32 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest
 
-      # 🔥 NOWY KROK: Instalacja pluginu auth dla GKE
-      - name: Install gke-gcloud-auth-plugin
+      # 5. Instalacja niezbędnego pluginu uwierzytelniającego dla GKE
+      - name: Install GKE Auth Plugin
         run: |
-          echo "Installing GKE Auth Plugin..."
-          # Pobieranie i instalacja pluginu bezpośrednio
-          curl https://sdk.cloud.google.com | bash > /dev/null
-          export PATH=$PATH:$HOME/google-cloud-sdk/bin
-          gcloud components install gke-gcloud-auth-plugin --quiet
+          echo "Installing Google Cloud CLI GKE Auth Plugin..."
+          sudo apt-get update -y
+          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
-      # 5. Konfiguracja połączenia z klastrem Kubernetes
+      # 6. Konfiguracja połączenia z klastrem Kubernetes (używa KUBE_CONFIG z Twoich Secrets)
       - name: Set up Kubernetes Context
         uses: azure/k8s-set-context@v3
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-      # 6. Aktualizacja obrazów w Kubernetesie
+      # 7. Aktualizacja obrazów w Kubernetesie i weryfikacja
       - name: Deploy to Kubernetes
         run: |
-          # Dodanie pluginu do ścieżki, aby kubectl go widział
-          export PATH=$PATH:$HOME/google-cloud-sdk/bin
+          # Wymuszenie użycia pluginu gke-gcloud-auth
+          export USE_GKE_GCLOUD_AUTH_PLUGIN=True
           
+          # Aktualizacja backendu
           kubectl set image deployment/lacco-backend lacco-backend=${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
+          
+          # Aktualizacja frontendu
           kubectl set image deployment/lacco-frontend lacco-frontend=${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
           
+          # Sprawdzenie statusu wdrożenia
           kubectl rollout status deployment/lacco-backend
           kubectl rollout status deployment/lacco-frontend
