@@ -72,21 +72,17 @@ public CorsConfigurationSource corsConfigurationSource() {
     configuration.setAllowedOrigins(List.of(
         "https://lacco.pl", 
         "https://www.lacco.pl",
+        "http://lacco.pl",             // Warto dodać na wypadek braku SSL
+        "http://34.185.174.183",       // 🔥 KLUCZOWE: Nowy adres Frontendu w GKE
+        "http://34.185.174.183:80",    // Port standardowy
+        "http://34.185.174.183:8080",  // Na wszelki wypadek
         "http://localhost:3000", 
-        "http://localhost:5173", 
-        "http://localhost",
-        "http://34.55.34.201",
-        "http://34.55.34.201:8080", // 🔥 DODANO: Twój aktualny port Frontendu
-        "http://34.55.34.201:80",
-        "http://34.7.166.90",
-        "http://34.7.166.90:8081",
-        "http://34.185.171.112:8081",
-        "http://34.185.171.112:8080"// Na wszelki wypadek
+        "http://localhost:5173",
+        "http://34.185.171.112:8081"   // Adres samego backendu
     ));
     
-    // Reszta konfiguracji bez zmian...
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(List.of("*")); // Uprośćmy to na chwilę dla testu
+    configuration.setAllowedHeaders(List.of("*")); 
     configuration.setAllowCredentials(true);
     configuration.setExposedHeaders(List.of("Authorization"));
 
