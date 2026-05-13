@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3. Budowanie i wysyłanie Backend-u z unikalnym tagiem (SHA)
+      # 3. Budowanie i wysyłanie Backend-u
       - name: Build & Push Backend
         uses: docker/build-push-action@v5
         with:
@@ -31,7 +31,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-      # 4. Budowanie i wysyłanie Frontend-u z unikalnym tagiem (SHA)
+      # 4. Budowanie i wysyłanie Frontend-u
       - name: Build & Push Frontend
         uses: docker/build-push-action@v5
         with:
@@ -42,24 +42,28 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest
 
-      # 5. Instalacja niezbędnego pluginu uwierzytelniającego dla GKE
+      # 5. Instalacja pluginu uwierzytelniającego GKE przez oficjalne repozytorium Google
       - name: Install GKE Auth Plugin
         run: |
-          echo "Installing Google Cloud CLI GKE Auth Plugin..."
+          echo "Adding Google Cloud SDK repository..."
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          
+          echo "Updating and installing plugin..."
           sudo apt-get update -y
           sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
-      # 6. Konfiguracja połączenia z klastrem Kubernetes (używa KUBE_CONFIG z Twoich Secrets)
+      # 6. Konfiguracja połączenia z klastrem Kubernetes
       - name: Set up Kubernetes Context
         uses: azure/k8s-set-context@v3
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-      # 7. Aktualizacja obrazów w Kubernetesie i weryfikacja
+      # 7. Aktualizacja obrazów w Kubernetesie
       - name: Deploy to Kubernetes
         run: |
-          # Wymuszenie użycia pluginu gke-gcloud-auth
+          # Wymuszenie użycia zainstalowanego pluginu
           export USE_GKE_GCLOUD_AUTH_PLUGIN=True
           
           # Aktualizacja backendu
@@ -68,6 +72,6 @@ jobs:
           # Aktualizacja frontendu
           kubectl set image deployment/lacco-frontend lacco-frontend=${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
           
-          # Sprawdzenie statusu wdrożenia
+          # Weryfikacja rolloutu
           kubectl rollout status deployment/lacco-backend
           kubectl rollout status deployment/lacco-frontend
