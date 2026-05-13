@@ -78,7 +78,9 @@ public CorsConfigurationSource corsConfigurationSource() {
         "http://34.185.174.183:8080",  // Na wszelki wypadek
         "http://localhost:3000", 
         "http://localhost:5173",
-        "http://34.185.171.112:8081"   // Adres samego backendu
+        "http://34.185.171.112:8081",
+        "http://35.242.194.26",
+        "http://35.242.194.26:8081"// Adres samego backendu
     ));
     
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
