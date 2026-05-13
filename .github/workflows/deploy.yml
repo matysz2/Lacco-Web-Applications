@@ -13,14 +13,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Logowanie do Docker Hub za pomocą dedykowanej akcji (bardziej stabilna)
+      # 2. Logowanie do Docker Hub
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3. Budowanie i wysyłanie Backend-u z unikalnym tagiem (SHA) oraz tagiem latest
+      # 3. Budowanie i wysyłanie Backend-u
       - name: Build & Push Backend
         uses: docker/build-push-action@v5
         with:
@@ -31,7 +31,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/lacco-app:latest
 
-      # 4. Budowanie i wysyłanie Frontend-u z unikalnym tagiem (SHA) oraz tagiem latest
+      # 4. Budowanie i wysyłanie Frontend-u
       - name: Build & Push Frontend
         uses: docker/build-push-action@v5
         with:
@@ -42,6 +42,15 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest
 
+      # 🔥 NOWY KROK: Instalacja pluginu auth dla GKE
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          echo "Installing GKE Auth Plugin..."
+          # Pobieranie i instalacja pluginu bezpośrednio
+          curl https://sdk.cloud.google.com | bash > /dev/null
+          export PATH=$PATH:$HOME/google-cloud-sdk/bin
+          gcloud components install gke-gcloud-auth-plugin --quiet
+
       # 5. Konfiguracja połączenia z klastrem Kubernetes
       - name: Set up Kubernetes Context
         uses: azure/k8s-set-context@v3
@@ -49,15 +58,14 @@ jobs:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-      # 6. Aktualizacja obrazów w Kubernetesie i weryfikacja (Zero Downtime)
+      # 6. Aktualizacja obrazów w Kubernetesie
       - name: Deploy to Kubernetes
         run: |
-          # Aktualizacja backendu nowym, unikalnym obrazem
-          kubectl set image deployment/lacco-backend lacco-backend=${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
+          # Dodanie pluginu do ścieżki, aby kubectl go widział
+          export PATH=$PATH:$HOME/google-cloud-sdk/bin
           
-          # Aktualizacja frontendu nowym, unikalnym obrazem
+          kubectl set image deployment/lacco-backend lacco-backend=${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
           kubectl set image deployment/lacco-frontend lacco-frontend=${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
           
-          # Czekanie na poprawne wdrożenie (jeśli testy zdrowia nie przejdą, proces zgłosi błąd)
           kubectl rollout status deployment/lacco-backend
           kubectl rollout status deployment/lacco-frontend
