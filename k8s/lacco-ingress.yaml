@@ -3,10 +3,10 @@ kind: Ingress
 metadata:
   name: lacco-ingress
   annotations:
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - lacco.pl
@@ -15,10 +15,17 @@ spec:
   - host: lacco.pl
     http:
       paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend  # <--- TU MUSI BYĆ "backend", NIE "backend-service"
+            port:
+              number: 8081
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: frontend-external
+            name: frontend-external  # <--- TU MUSI BYĆ "frontend-external", NIE "frontend-service"
             port:
               number: 80

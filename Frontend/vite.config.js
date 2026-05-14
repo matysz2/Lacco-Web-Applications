@@ -4,11 +4,12 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: './',         // <--- DODAJ TO: Kluczowe dla poprawnego ładowania plików z Bucketa
   server: {
-    host: true,         // Pozwala na dostęp spoza kontenera
-    port: 3000,         // Spójność z portem w docker-compose
+    host: true,         
+    port: 3000,         
     watch: {
-      usePolling: true, // Kluczowe dla odświeżania na żywo w Dockerze na Windows
+      usePolling: true, 
     },
   },
 })
