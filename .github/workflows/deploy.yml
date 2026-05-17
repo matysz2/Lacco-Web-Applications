@@ -40,12 +40,16 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/lacco-frontend:latest
 
-      # 🔥 NOWOŚĆ: Logowanie do Google Cloud
+      # Logowanie do Google Cloud
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      # Instalacja i ustawienie komponentów Google Cloud SDK
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
 
       # Instalacja pluginu auth dla GKE
       - name: Install GKE Auth Plugin
@@ -62,13 +66,38 @@ jobs:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
+      # 🔥 DYNAMICZNE POBIERANIE IP RUNNERA GITHUB
+      - name: Get GitHub Actions Runner IP
+        id: ip
+        run: |
+          PUBLIC_IP=$(curl -s https://api.ipify.org)
+          echo "runner_ip=${PUBLIC_IP}" >> $GITHUB_OUTPUT
+
+      # 🔥 AUTORYZACJA IP W KLASTRZE GKE PRZED WDROŻENIEM
+      - name: Authorize GitHub Runner IP in GKE
+        run: |
+          gcloud container clusters update lacco-cluster-prod \
+            --zone europe-central2-a \
+            --project poetic-chariot-495412-t1 \
+            --enable-master-authorized-networks \
+            --master-authorized-networks ${{ steps.ip.outputs.runner_ip }}/32
+
       # Aktualizacja obrazów w Kubernetesie
       - name: Deploy to Kubernetes
+        env:
+          USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
         run: |
-          export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-          
           kubectl set image deployment/lacco-backend lacco-backend=${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
           kubectl set image deployment/lacco-frontend lacco-frontend=${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
           
           kubectl rollout status deployment/lacco-backend
           kubectl rollout status deployment/lacco-frontend
+
+      # 🔥 CZYSZCZENIE: Usunięcie dynamicznego IP i przywrócenie dostępu domyślnego
+      - name: Clean up Authorized Networks
+        if: always()
+        run: |
+          gcloud container clusters update lacco-cluster-prod \
+            --zone europe-central2-a \
+            --project poetic-chariot-495412-t1 \
+            --master-authorized-networks 0.0.0.0/0
