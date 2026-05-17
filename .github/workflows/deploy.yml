@@ -66,14 +66,14 @@ jobs:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-      # 🔥 DYNAMICZNE POBIERANIE IP RUNNERA GITHUB
+      # DYNAMICZNE POBIERANIE IP RUNNERA GITHUB
       - name: Get GitHub Actions Runner IP
         id: ip
         run: |
           PUBLIC_IP=$(curl -s https://api.ipify.org)
           echo "runner_ip=${PUBLIC_IP}" >> $GITHUB_OUTPUT
 
-      # 🔥 AUTORYZACJA IP W KLASTRZE GKE PRZED WDROŻENIEM
+      # AUTORYZACJA IP W KLASTRZE GKE Z OCZEKIWANIEM NA PROPAGACJĘ
       - name: Authorize GitHub Runner IP in GKE
         run: |
           gcloud container clusters update lacco-cluster-prod \
@@ -81,6 +81,9 @@ jobs:
             --project poetic-chariot-495412-t1 \
             --enable-master-authorized-networks \
             --master-authorized-networks ${{ steps.ip.outputs.runner_ip }}/32
+          
+          echo "Oczekiwanie 60 sekund na pelna aktywacje i propagacje regul sieciowych w Google Cloud..."
+          sleep 60
 
       # Aktualizacja obrazów w Kubernetesie
       - name: Deploy to Kubernetes
@@ -93,11 +96,11 @@ jobs:
           kubectl rollout status deployment/lacco-backend
           kubectl rollout status deployment/lacco-frontend
 
-      # 🔥 CZYSZCZENIE: Usunięcie dynamicznego IP i przywrócenie dostępu domyślnego
+      # CZYSZCZENIE: Calkowite wylaczenie blokady IP (przywrocenie otwartej sieci dla dewelopmentu)
       - name: Clean up Authorized Networks
         if: always()
         run: |
           gcloud container clusters update lacco-cluster-prod \
             --zone europe-central2-a \
             --project poetic-chariot-495412-t1 \
-            --master-authorized-networks 0.0.0.0/0
+            --no-enable-master-authorized-networksgit add
