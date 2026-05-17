@@ -59,20 +59,20 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
-      # Konfiguracja połączenia z klastrem Kubernetes
-      - name: Set up Kubernetes Context
-        uses: azure/k8s-set-context@v3
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
-      # Aktualizacja obrazów w Kubernetesie (Wykonuje się natychmiast)
+      # Pobranie poświadczeń i aktualizacja obrazów w Kubernetesie
       - name: Deploy to Kubernetes
         env:
           USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
         run: |
+          # Dynamiczne wygenerowanie bezpiecznego połączenia z klastrem
+          gcloud container clusters get-credentials lacco-cluster-prod \
+            --zone europe-central2-a \
+            --project poetic-chariot-495412-t1
+          
+          # Wdrożenie nowych wersji aplikacji
           kubectl set image deployment/lacco-backend lacco-backend=${{ secrets.DOCKER_USERNAME }}/lacco-app:${{ github.sha }}
           kubectl set image deployment/lacco-frontend lacco-frontend=${{ secrets.DOCKER_USERNAME }}/lacco-frontend:${{ github.sha }}
           
+          # Weryfikacja statusu
           kubectl rollout status deployment/lacco-backend
           kubectl rollout status deployment/lacco-frontend
