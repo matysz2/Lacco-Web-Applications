@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lacco-ingress
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - lacco.pl
+    - www.lacco.pl
+    secretName: lacco-tls
+  rules:
+  - host: lacco.pl
+    http:
+      paths:
+      - path: /api/.*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: lacco-backend
+            port:
+              number: 8081
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: lacco-frontend
+            port:
+              number: 80
+  - host: www.lacco.pl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: lacco-frontend
+            port:
+              number: 80
