@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: lacco-backend-global-monitor
+  namespace: monitoring # Umieszczony tam, gdzie żyje Prometheus
+  labels:
+    release: lacco-monitor
+spec:
+  namespaceSelector:
+    matchNames:
+      - default # Nakazuje szukanie usługi w przestrzeni default
+  selector:
+    matchLabels:
+      app: lacco-backend # Szuka usługi o takiej etykiecie
+  endpoints:
+  - port: http
+    path: /actuator/prometheus
+    interval: 15s
+  - targetPort: 8080
+    path: /actuator/prometheus
+    interval: 15s
