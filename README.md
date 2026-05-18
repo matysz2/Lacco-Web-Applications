@@ -57,6 +57,7 @@ project/
 │   ├── prometheus.yml
 │   ├── alert_rules.yml
 │   ├── alertmanager.yml
+│   ├── monitoring-values.yaml
 │   └── docker-compose.yml
 │
 ├── terraform/
@@ -71,7 +72,7 @@ project/
 ├── docker-compose.yml
 ├── .gitignore
 └── README.md
-Funkcjonalności
+Funkcjonalności:
 Authentication & Security
 JWT Authentication
 BCrypt password hashing
@@ -113,15 +114,6 @@ Kubernetes (opcjonalnie lokalnie)
 Git
 Konfiguracja ENV
 
-Skopiuj plik:
-
-cp .env.example .env
-
-Uzupełnij:
-
-DATABASE_URL=jdbc:postgresql://localhost:5432/lacco
-DATABASE_USER=postgres
-DATABASE_PASSWORD=password
 
 JWT_SECRET=your-secret-key-min-32-chars
 JWT_EXPIRATION=86400000
@@ -188,28 +180,6 @@ API Endpoints
 Authentication
 Login
 POST /api/auth/login
-
-Request:
-
-{
-  "email": "test@example.com",
-  "password": "password123"
-}
-
-Response:
-
-{
-  "token": "jwt-token",
-  "user": {
-    "id": "uuid",
-    "firstName": "Test",
-    "lastName": "User",
-    "email": "test@example.com",
-    "role": "ADMIN"
-  }
-}
-Profile
-GET /api/auth/profile
 
 Headers:
 
